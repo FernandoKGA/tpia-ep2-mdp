@@ -21,10 +21,11 @@ public class MDP {
          */
 
         FileReader file;
+        BufferedReader br;
         switch(args[0]) {
             case "-f":
                 file = getFileReader(args[1], fixedGoalInitialState);
-                BufferedReader br = new BufferedReader(file);
+                br = new BufferedReader(file);
                 while (br.ready()) {
                     System.out.println(br.readLine());
                 }
@@ -32,7 +33,7 @@ public class MDP {
                 break;
             case "-r":
                 file = getFileReader(args[1], randomGoalInitialState);
-                BufferedReader br = new BufferedReader(file);
+                br = new BufferedReader(file);
                 while (br.ready()) {
                     System.out.println(br.readLine());
                 }
