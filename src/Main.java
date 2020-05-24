@@ -3,7 +3,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 
-public class MDP {
+public class Main {
     static final String file_prefix = "navigation_";
     static final String file_format = ".net";
     static final String fixedGoalInitialState = "FixedGoalInitialState";
