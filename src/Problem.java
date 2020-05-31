@@ -1,4 +1,13 @@
+package src;
+
+import java.util.Map;
+import java.util.List;
+
 public class Problem {
-    public Map<String, String> states;
-    public MDPAction[] actions;
+    public String[] states;
+    public Map<String, String> actions;
+
+    public Problem() {
+        
+    }
 }

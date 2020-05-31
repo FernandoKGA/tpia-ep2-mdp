@@ -1,3 +1,5 @@
+package src;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -48,37 +50,49 @@ public class Main {
     public static void createProblem( BufferedReader br ) throws java.io.IOException {
         Problem problem = new Problem();
 
-        while (br.ready()) {
+        while ( br.ready() ) {
             String line = br.readLine();
-            // States
-            if( line.equals("states") ) {
-                while( !line.equals("endstates") ) {
+            
+            switch( line ) {
+                case "states":
                     line = br.readLine();
-                }
-            }
-            // Actions
-            else if( line.contains("action") ) {
-                while( !line.equals("endaction") ) {
+                    line = line.trim();
+                    problem.states = line.split(", ");
+                    for (String state : problem.states) {
+                        System.out.println(state);
+                    }
+                    break;
+
+                case "cost":
                     line = br.readLine();
-                }
-            }
-            // Cost
-            else if( line.equals("cost") ) {
-                while( !line.equals("endcost") ) {
+                    while( !line.equals("endcost") ) {
+                        line = br.readLine();
+                    }
+                    break;
+
+                case "initialstate":
                     line = br.readLine();
-                }
-            }
-            // Initial State
-            else if( line.equals("initialstate") ) {
-                while( !line.equals("endcost") ) {
+                    while( !line.equals("endinitialstate") ) {
+                        line = br.readLine();
+                    }
+                    break;
+                
+                case "goalstate":
                     line = br.readLine();
-                }
-            }
-            // Cost
-            else if( line.equals("cost") ) {
-                while( !line.equals("endcost") ) {
-                    line = br.readLine();
-                }
+                    while( !line.equals("endgoalstate") ) {
+                        line = br.readLine();
+                    }
+                    break;
+
+                default:
+                    if ( !line.equals("") ){
+                        if( line.contains("action") ) {
+                            while( !line.equals("endaction") ) {
+                                line = br.readLine();
+                            }
+                        }
+                    }
+                    break;
             }
         }
     }

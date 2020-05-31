@@ -1,5 +1,7 @@
+package src;
+
 public class MDPAction {
-    private MDPState successorState;
+    private String successorState;
     private double probabilityOfAction;
     private double discard;
 }
