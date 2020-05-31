@@ -9,8 +9,8 @@ public class Main {
     static final String fixedGoalInitialState = "FixedGoalInitialState";
     static final String randomGoalInitialState = "RandomGoalInitialState";
     
-    // Program must be run from top level folder (tpia-ep2-mdp) with command: java src/MDP.java
-    public static void main(String[] args) throws Exception {
+    // Program must be run from top level folder (tpia-ep2-mdp) with command: java src/Main.java [-f | -r] [1-10]
+    public static void main(String[] args) throws Exception, java.io.IOException {
         /**
          * -f navigation_number
          * -r navigation_number
@@ -26,17 +26,13 @@ public class Main {
             case "-f":
                 file = getFileReader(args[1], fixedGoalInitialState);
                 br = new BufferedReader(file);
-                while (br.ready()) {
-                    System.out.println(br.readLine());
-                }
+                createProblem(br);
                 file.close();
                 break;
             case "-r":
                 file = getFileReader(args[1], randomGoalInitialState);
                 br = new BufferedReader(file);
-                while (br.ready()) {
-                    System.out.println(br.readLine());
-                }
+                createProblem(br);
                 file.close();
                 break;
             default:
@@ -47,5 +43,43 @@ public class Main {
     public static FileReader getFileReader(String fileNumber, String folder) throws FileNotFoundException{
         String absolutePath = new File("").getAbsolutePath();
         return new FileReader(absolutePath+"/files/"+folder+"/"+file_prefix+fileNumber+file_format);
+    }
+
+    public static void createProblem( BufferedReader br ) throws java.io.IOException {
+        Problem problem = new Problem();
+
+        while (br.ready()) {
+            String line = br.readLine();
+            // States
+            if( line.equals("states") ) {
+                while( !line.equals("endstates") ) {
+                    line = br.readLine();
+                }
+            }
+            // Actions
+            else if( line.contains("action") ) {
+                while( !line.equals("endaction") ) {
+                    line = br.readLine();
+                }
+            }
+            // Cost
+            else if( line.equals("cost") ) {
+                while( !line.equals("endcost") ) {
+                    line = br.readLine();
+                }
+            }
+            // Initial State
+            else if( line.equals("initialstate") ) {
+                while( !line.equals("endcost") ) {
+                    line = br.readLine();
+                }
+            }
+            // Cost
+            else if( line.equals("cost") ) {
+                while( !line.equals("endcost") ) {
+                    line = br.readLine();
+                }
+            }
+        }
     }
 }

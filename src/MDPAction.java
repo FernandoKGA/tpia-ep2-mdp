@@ -1,6 +1,5 @@
 public class MDPAction {
-    private String currentAction;
-    private String successorAction;
+    private MDPState successorState;
     private double probabilityOfAction;
     private double discard;
 }

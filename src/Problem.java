@@ -1,5 +1,4 @@
 public class Problem {
-    public String[] states;
+    public Map<String, String> states;
     public MDPAction[] actions;
-    
 }
