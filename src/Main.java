@@ -32,22 +32,25 @@ public class Main {
 
         FileReader file;
         BufferedReader br;
+        Problem problem;
         switch(args[0]) {
             case "-f":
                 file = getFileReader(args[1], fixedGoalInitialState);
                 br = new BufferedReader(file);
-                createProblem(br);
+                problem = createProblem(br);
                 file.close();
                 break;
             case "-r":
                 file = getFileReader(args[1], randomGoalInitialState);
                 br = new BufferedReader(file);
-                createProblem(br);
+                problem = createProblem(br);
                 file.close();
                 break;
             default:
                 throw new IllegalArgumentException("Parameter not recognized.");
         }
+
+        //executa algoritmos
     }
 
     public static FileReader getFileReader(String fileNumber, String folder) throws FileNotFoundException{
@@ -55,10 +58,16 @@ public class Main {
         return new FileReader(absolutePath+"/files/"+folder+"/"+file_prefix+fileNumber+file_format);
     }
 
-    public static void createProblem( BufferedReader br ) throws java.io.IOException {
+    public static Problem createProblem( BufferedReader br ) throws java.io.IOException {
         Problem problem = new Problem();
         problem.actions = new HashMap<>();
         problem.costs = new HashMap<>();
+
+        // public String[] states;
+        // public Map<String, List<MDPAction>> actions;
+        // public Map<String, List<SimpleEntry<String, Double>>> costs;
+        // public String initialState;
+        // public String goalState;
 
         while ( br.ready() ) {
             String line = br.readLine();
@@ -97,14 +106,22 @@ public class Main {
 
                 case "initialstate":
                     line = br.readLine();
+                    line = line.trim();
                     while( !line.equals("endinitialstate") ) {
+
+                        problem.initialState = line;
+
                         line = br.readLine();
                     }
                     break;
                 
                 case "goalstate":
                     line = br.readLine();
+                    line = line.trim();
                     while( !line.equals("endgoalstate") ) {
+
+                        problem.goalState = line;
+
                         line = br.readLine();
                     }
                     break;
@@ -163,5 +180,8 @@ public class Main {
         //         System.out.println(pair.getKey() + " " + pair.getValue());
         //     }
         // }
+
+        // System.out.println(problem.goalState);
+        // System.out.println(problem.initialState);
     }
 }
