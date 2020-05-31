@@ -1,7 +1,22 @@
 package src;
 
 public class MDPAction {
-    private String successorState;
-    private double probabilityOfAction;
-    private double discard;
+    public String actionName;
+    public String currentState;
+    public String successorState;
+    public double probabilityOfAction;
+    public double discard;
+    public double cost;
+
+    public MDPAction() {
+    }
+
+    public MDPAction(String actionName, String currentState, String successorState, double probabilityOfAction,
+            double discard) {
+        this.actionName = actionName;
+        this.currentState = currentState;
+        this.successorState = successorState;
+        this.probabilityOfAction = probabilityOfAction;
+        this.discard = discard;
+    }
 }
