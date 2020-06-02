@@ -9,7 +9,6 @@ import src.MDPAction;
 public class Problem {
     public String[] states;
     public Map<String, List<MDPAction>> actions;
-    public Map<String, List<SimpleEntry<String, Double>>> costs;
     public String initialState;
     public String goalState;
 

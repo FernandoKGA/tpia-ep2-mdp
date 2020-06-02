@@ -18,5 +18,6 @@ public class MDPAction {
         this.successorState = successorState;
         this.probabilityOfAction = probabilityOfAction;
         this.discard = discard;
+        this.cost = 0;
     }
 }

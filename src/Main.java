@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -58,16 +59,12 @@ public class Main {
         return new FileReader(absolutePath+"/files/"+folder+"/"+file_prefix+fileNumber+file_format);
     }
 
-    public static Problem createProblem( BufferedReader br ) throws java.io.IOException {
+    public static Problem createProblem( BufferedReader br ) throws IOException {
         Problem problem = new Problem();
         problem.actions = new HashMap<>();
-        problem.costs = new HashMap<>();
+        Map<String, List<SimpleEntry<String, Double>>> costs = new HashMap<>();
 
-        // public String[] states;
-        // public Map<String, List<MDPAction>> actions;
-        // public Map<String, List<SimpleEntry<String, Double>>> costs;
-        // public String initialState;
-        // public String goalState;
+        long initTime = System.currentTimeMillis();
 
         while ( br.ready() ) {
             String line = br.readLine();
@@ -89,18 +86,19 @@ public class Main {
                         String actionName = cost_line[1];
                         double cost = Double.parseDouble(cost_line[2]);
 
-                        if ( problem.costs.containsKey(currentState) ) {
-                            List<SimpleEntry<String, Double>> costs = problem.costs.get(currentState);
-                            costs.add(new SimpleEntry<>(actionName, cost));
-                            problem.costs.replace(currentState, costs);
+                        if ( costs.containsKey(currentState) ) {
+                            List<SimpleEntry<String, Double>> costs_aux = costs.get(currentState);
+                            costs_aux.add(new SimpleEntry<>(actionName, cost));
+                            costs.replace(currentState, costs_aux);
                         }
                         else {
-                            List<SimpleEntry<String, Double>> costs = new ArrayList<>();
-                            costs.add(new SimpleEntry<>(actionName, cost));
-                            problem.costs.put(currentState, costs);
+                            List<SimpleEntry<String, Double>> costs_aux = new ArrayList<>();
+                            costs_aux.add(new SimpleEntry<>(actionName, cost));
+                            costs.put(currentState, costs_aux);
                         }
 
                         line = br.readLine();
+                        line = line.trim();
                     }
                     break;
 
@@ -162,26 +160,48 @@ public class Main {
             }
         }
         
-        //System.out.println(problem.states.length);
-        // System.out.println(problem.actions.size());
+        for ( String state : problem.states ) {
+            
+            List<MDPAction> actions = problem.actions.get(state);
+            List<SimpleEntry<String,Double>> actions_costs = costs.get(state);
 
-        // for (List<MDPAction> list : problem.actions.values()) {
-        //     for (MDPAction mdpAction : list) {
-        //         System.out.println(mdpAction.actionName + " " + mdpAction.currentState + 
-        //         " " + mdpAction.successorState + " " + mdpAction.probabilityOfAction + " "
-        //         + mdpAction.discard);
-        //     }
-        // }
+            if ( actions_costs != null && actions != null ) {
+                for (MDPAction action : actions) {
+                    for (SimpleEntry<String,Double> simpleEntry : actions_costs) {
+                        if ( simpleEntry.getKey().equals(action.actionName) ) {
+                            action.cost = simpleEntry.getValue();
+                        }
+                    }
+                }    
 
-        //System.out.println(problem.costs.size());
+                problem.actions.replace(state, actions);
+            }
+            else {
+                // se um dos dois eh nulo
+                if ( ( actions != null && actions_costs == null ) 
+                        || ( ( actions == null && actions_costs != null ) ) ) {
+                    // verifica se as acoes nao sao para o mesmo estado
+                    for ( MDPAction action : actions ) {
+                        if ( !action.currentState.equals(action.successorState) ) {
+                            String message = "Invalid state '" + state + "' actions join, ";
+                            if ( actions == null ) {
+                                message += "doesn't has actions.";
+                            }
+                            if ( actions_costs == null ) {
+                                message += "doesn't has costs for actions.";
+                            }
+                            
+                            throw new NullPointerException(message);
+                        }
+                    }
+                }
+            }
+        }
 
-        // for ( List<SimpleEntry<String, Double>> costs : problem.costs.values() ) {
-        //     for ( SimpleEntry<String, Double> pair : costs) {
-        //         System.out.println(pair.getKey() + " " + pair.getValue());
-        //     }
-        // }
+        long finishTime = System.currentTimeMillis();
+        long diff = finishTime - initTime;
+        System.out.println("Parsing time: " + diff + "ms");
 
-        // System.out.println(problem.goalState);
-        // System.out.println(problem.initialState);
+        return problem;
     }
 }
