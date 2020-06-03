@@ -62,7 +62,7 @@ public class Main {
     public static Problem createProblem( BufferedReader br ) throws IOException {
         Problem problem = new Problem();
         problem.actions = new HashMap<>();
-        Map<String, List<SimpleEntry<String, Double>>> costs = new HashMap<>();
+        Map<String, Map<String, Double>> costs = new HashMap<>();
 
         long initTime = System.currentTimeMillis();
 
@@ -87,13 +87,13 @@ public class Main {
                         double cost = Double.parseDouble(cost_line[2]);
 
                         if ( costs.containsKey(currentState) ) {
-                            List<SimpleEntry<String, Double>> costs_aux = costs.get(currentState);
-                            costs_aux.add(new SimpleEntry<>(actionName, cost));
+                            Map<String, Double> costs_aux = costs.get(currentState);
+                            costs_aux.put(actionName, cost);
                             costs.replace(currentState, costs_aux);
                         }
                         else {
-                            List<SimpleEntry<String, Double>> costs_aux = new ArrayList<>();
-                            costs_aux.add(new SimpleEntry<>(actionName, cost));
+                            Map<String, Double> costs_aux = new HashMap<>();
+                            costs_aux.put(actionName, cost);
                             costs.put(currentState, costs_aux);
                         }
 
@@ -163,14 +163,12 @@ public class Main {
         for ( String state : problem.states ) {
             
             List<MDPAction> actions = problem.actions.get(state);
-            List<SimpleEntry<String,Double>> actions_costs = costs.get(state);
+            Map<String,Double> actions_costs = costs.get(state);
 
             if ( actions_costs != null && actions != null ) {
-                for (MDPAction action : actions) {
-                    for (SimpleEntry<String,Double> simpleEntry : actions_costs) {
-                        if ( simpleEntry.getKey().equals(action.actionName) ) {
-                            action.cost = simpleEntry.getValue();
-                        }
+                for ( MDPAction action : actions ) {
+                    if ( actions_costs.containsKey(action.actionName) ) {
+                        action.cost = actions_costs.get(action.actionName);
                     }
                 }    
 
