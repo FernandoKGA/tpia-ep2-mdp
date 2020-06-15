@@ -11,6 +11,7 @@ public class Problem {
     public Map<String, List<MDPAction>> actions;
     public String initialState;
     public String goalState;
+    public double epsilon = 0.1;
 
     public Problem() {
         
