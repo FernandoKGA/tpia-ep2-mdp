@@ -23,7 +23,8 @@ public class Problem {
 
     public static Problem createProblem( BufferedReader br ) throws IOException {
         Problem problem = new Problem();
-        String[] states = new String[1]; //just initialize
+        String[] statesStr = new String[1]; //just initialize
+        Map<String, MDPState> states = new HashMap<>();
         Map<String, List<MDPAction>> problemActions = new HashMap<>();
         Map<String, Map<String, Double>> costs = new HashMap<>();
 
@@ -36,7 +37,8 @@ public class Problem {
                 case "states":
                     line = br.readLine();
                     line = line.trim();
-                    states = line.split(", ");
+                    statesStr = line.split(", ");
+                    
                     break;
 
                 case "cost":
@@ -123,11 +125,11 @@ public class Problem {
             }
         }
         
-        problem.states = new MDPState[states.length];
+        problem.states = new MDPState[statesStr.length];
         int cont_state = 0;
 
         // create MDP state with actions and its costs
-        for ( String state : states ) {
+        for ( String state : statesStr ) {
 
             List<MDPAction> actions = problemActions.get(state);
             Map<String,Double> actions_costs = costs.get(state);

@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.security.KeyStore.Entry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -14,6 +15,7 @@ import java.util.AbstractMap.SimpleEntry;
 
 import src.MDPAction;
 import src.MDPState;
+import src.PD;
 
 public class Main {
     static final String file_prefix = "navigation_";
@@ -67,16 +69,40 @@ public class Main {
         return Math.abs(newValueFunction - oldValueFunction);
     }
 
-    public static double computeValueFunctionWithBellmanBackup( MDPState state ) {
-        double sum = 0;
-        //state.sucessorAndPossibility.
-        for ( MDPAction action : state.actions ) {
-            if ( action.currentState == action.successorState && action.probabilityOfAction == 1) continue;
-            else {
+    public static Map.Entry<Double, MDPAction> computeValueFunctionWithBellmanBackup( MDPState state ) {
+        
+        double minimal_value = Double.MAX_VALUE;
+        MDPAction argmin = null;
 
+        for ( MDPAction action : state.actions ) {
+            
+            double sum = 0;
+
+            if ( action.sucessorAndPossibility.size() == 1 ) {
+                Map.Entry<MDPState, PD> sucessorAndPossibility = action.sucessorAndPossibility.entrySet().iterator().next();
+                MDPState sucessor = sucessorAndPossibility.getKey();
+                if ( state.x == sucessor.x && state.y == sucessor.y ) continue;
+                else {
+                    sum += (action.cost + sucessor.valuesFunctions.get(sucessor.valuesFunctions.size()-1));
+                    // ALERTA PARA: ele realmente pega o valor da iteracao atual ou pega de outra iteracao?
+                }
+            }
+            else {
+                sum += action.cost;
+                for (Map.Entry<MDPState, PD> pair : action.sucessorAndPossibility.entrySet()) {
+                    MDPState sucessor = pair.getKey();
+                    PD possibility = pair.getValue();
+                    sum += (possibility.probabilityOfAction * sucessor.valuesFunctions.get(
+                                                        sucessor.valuesFunctions.size()-1));
+                }
+            }
+
+            if (minimal_value > sum) {
+                minimal_value = sum;
+                argmin = action;
             }
         }
-        return sum;
+        return Map.entry(minimal_value, argmin);
     }
 
     public static void IterationValue( Problem problem ) {
@@ -93,7 +119,10 @@ public class Main {
             iterations++;
             maxResidual = 0;
             for (MDPState state : problem.states) {
-                double newValueFunction = computeValueFunctionWithBellmanBackup(state);
+                Map.Entry<Double, MDPAction> pair = computeValueFunctionWithBellmanBackup(state);
+                double newValueFunction = pair.getKey();
+                MDPAction argmin = pair.getValue();
+                
                 maxResidual = Math.max(
                     maxResidual,
                     computeResidual(newValueFunction,state.valuesFunctions.get(state.valuesFunctions.size()-1))

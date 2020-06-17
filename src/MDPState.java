@@ -10,6 +10,7 @@ public class MDPState {
     public int y;
     public List<MDPAction> actions;
     public List<Double> valuesFunctions = new ArrayList<>();
+    // mudar tipo para guardar acao tambem
 
     public MDPState( String state ) {
         String[] coords = parseState(state);
