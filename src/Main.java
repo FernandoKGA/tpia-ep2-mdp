@@ -27,8 +27,8 @@ public class Main {
          * -f navigation_number
          * -r navigation_number
          * 
-         * -f -> fixed
-         * -r -> random
+         * -f -> FixedGoalInitialState
+         * -r -> RandomGoalInitialState
          * navigation_number goes from 1 to 10
          */
 
@@ -39,13 +39,13 @@ public class Main {
             case "-f":
                 file = getFileReader(args[1], fixedGoalInitialState);
                 br = new BufferedReader(file);
-                problem = createProblem(br);
+                problem = Problem.createProblem(br);
                 file.close();
                 break;
             case "-r":
                 file = getFileReader(args[1], randomGoalInitialState);
                 br = new BufferedReader(file);
-                problem = createProblem(br);
+                problem = Problem.createProblem(br);
                 file.close();
                 break;
             default:
@@ -67,35 +67,20 @@ public class Main {
         return Math.abs(newValueFunction - oldValueFunction);
     }
 
-    public static double computeValueFunctionWithBellmanBackup(MDPState state) {
-        return 0;
+    public static double computeValueFunctionWithBellmanBackup( MDPState state ) {
+        double sum = 0;
+        //state.sucessorAndPossibility.
+        for ( MDPAction action : state.actions ) {
+            if ( action.currentState == action.successorState && action.probabilityOfAction == 1) continue;
+            else {
+
+            }
+        }
+        return sum;
     }
 
     public static void IterationValue( Problem problem ) {
         long initTime = System.currentTimeMillis();
-    
-
-        // builds grid
-        // MDPState[][] grid = new MDPState[maximum_x+1][maximum_y+1];
-
-        // for ( String state : problem.states ) {
-        //     String[] state_strings = state.split("-");
-        //     String[] coords = state_strings[2].split("y");
-        //     String x_coord = coords[0].replace("x", "");
-
-        //     int x = Integer.parseInt(x_coord);
-        //     int y = Integer.parseInt(coords[1]);
-
-        //     grid[x][y] = new MDPState(x, y, problem.actions.get(state));
-        // }
-
-        // for ( int i = 0; i < grid.length; i++ ) {
-        //     for ( int j = 0; j < grid[0].length; j++ ) {
-        //         if ( grid[i][j] != null) {
-        //             System.out.println(i + " " + j);
-        //         }
-        //     }
-        // }
 
         //initialize V0
         for (MDPState state : problem.states) {
@@ -132,5 +117,30 @@ public class Main {
         long finishTime = System.currentTimeMillis();
         long diff = finishTime - initTime;
         System.out.println("Iteration Policy Time: " + diff + "ms");
+    }
+
+    public static MDPState[][] createGrid( Problem problem ) {
+        // int maximum_x = 0;
+        // int maximum_y = 0;
+        
+        // for ( String state : problem.states ) {
+            
+        //     if ( maximum_x < x ) maximum_x = x;
+        //     if ( maximum_y < y ) maximum_y = y;
+        // }
+
+         // builds grid
+        // MDPState[][] grid = new MDPState[maximum_x+1][maximum_y+1];
+        //     grid[x][y] = new MDPState(x, y, problem.actions.get(state));
+        // }
+
+        // for ( int i = 0; i < grid.length; i++ ) {
+        //     for ( int j = 0; j < grid[0].length; j++ ) {
+        //         if ( grid[i][j] != null) {
+        //             System.out.println(i + " " + j);
+        //         }
+        //     }
+        // }
+        return null;
     }
 }

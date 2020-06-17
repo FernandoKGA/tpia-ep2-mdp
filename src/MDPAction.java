@@ -1,8 +1,12 @@
 package src;
 
+import java.util.List;
+import java.util.Map;
+
 public class MDPAction {
     public String actionName;
     public String currentState;
+    public Map<String, List<PD>> sucessorAndPossibility;
     public String successorState;
     public double probabilityOfAction;
     public double discard;

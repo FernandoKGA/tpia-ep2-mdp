@@ -23,7 +23,7 @@ public class Problem {
 
     public static Problem createProblem( BufferedReader br ) throws IOException {
         Problem problem = new Problem();
-        String[] states = new String[10];
+        String[] states = new String[1]; //just initialize
         Map<String, List<MDPAction>> problemActions = new HashMap<>();
         Map<String, Map<String, Double>> costs = new HashMap<>();
 
@@ -81,7 +81,6 @@ public class Problem {
                     line = line.trim();
                     while( !line.equals("endgoalstate") ) {
 
-
                         problem.goalState = new MDPState(line);
 
                         line = br.readLine();
@@ -124,22 +123,12 @@ public class Problem {
             }
         }
         
-
-        // int maximum_x = 0;
-        // int maximum_y = 0;
-        
-        // for ( String state : problem.states ) {
-            
-        //     if ( maximum_x < x ) maximum_x = x;
-        //     if ( maximum_y < y ) maximum_y = y;
-        // }
-
-        //ArrayList<MDPState> list_state = new ArrayList<>();
         problem.states = new MDPState[states.length];
         int cont_state = 0;
 
+        // create MDP state with actions and its costs
         for ( String state : states ) {
-            
+
             List<MDPAction> actions = problemActions.get(state);
             Map<String,Double> actions_costs = costs.get(state);
             MDPState mdpState = new MDPState(state); 
