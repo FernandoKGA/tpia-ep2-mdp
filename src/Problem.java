@@ -23,7 +23,7 @@ public class Problem {
 
     public static Problem createProblem( BufferedReader br ) throws IOException {
         Problem problem = new Problem();
-        String[] states;
+        String[] states = new String[10];
         Map<String, List<MDPAction>> problemActions = new HashMap<>();
         Map<String, Map<String, Double>> costs = new HashMap<>();
 
@@ -134,10 +134,15 @@ public class Problem {
         //     if ( maximum_y < y ) maximum_y = y;
         // }
 
+        //ArrayList<MDPState> list_state = new ArrayList<>();
+        problem.states = new MDPState[states.length];
+        int cont_state = 0;
+
         for ( String state : states ) {
             
             List<MDPAction> actions = problemActions.get(state);
             Map<String,Double> actions_costs = costs.get(state);
+            MDPState mdpState = new MDPState(state); 
 
             if ( actions_costs != null && actions != null ) {
                 for ( MDPAction action : actions ) {
@@ -168,9 +173,10 @@ public class Problem {
                     }
                 }
             }
+            mdpState.actions = actions;
+            problem.states[cont_state] = mdpState;
+            cont_state ++;
         }
-
-        //criar os mdpstates, colocar as actions
 
         long finishTime = System.currentTimeMillis();
         long diff = finishTime - initTime;
