@@ -16,12 +16,14 @@ import java.util.AbstractMap.SimpleEntry;
 import src.MDPAction;
 import src.MDPState;
 import src.PD;
+import src.Problem;
 
 public class Main {
     static final String file_prefix = "navigation_";
     static final String file_format = ".net";
     static final String fixedGoalInitialState = "FixedGoalInitialState";
     static final String randomGoalInitialState = "RandomGoalInitialState";
+    static final String example = "RunningExample";
     
     // Program must be run from top level folder (tpia-ep2-mdp) with command: java src/Main.java [-f | -r] [1-10]
     public static void main( String[] args ) throws Exception, java.io.IOException {
@@ -37,7 +39,9 @@ public class Main {
         FileReader file;
         BufferedReader br;
         Problem problem;
-        switch(args[0]) {
+
+        String mode = args[0].trim();
+        switch(mode) {
             case "-f":
                 file = getFileReader(args[1], fixedGoalInitialState);
                 br = new BufferedReader(file);
@@ -50,29 +54,40 @@ public class Main {
                 problem = Problem.createProblem(br);
                 file.close();
                 break;
+            case "-ex":
+                file = getFileReaderForExample(example);
+                br = new BufferedReader(file);
+                problem = Problem.createProblem(br);
+                file.close();
+                break;
             default:
-                throw new IllegalArgumentException("Parameter not recognized.");
+                throw new IllegalArgumentException("Parameter " + "'" + mode + "'" + " not recognized.");
         }
 
         //executa algoritmos
 
         //Iteração de valor
-        //IterationValue(problem);
+        IterationValue(problem);
 
         //Iteração de política
         //IterationPolicy(problem);
     }
 
-    public static FileReader getFileReader (String fileNumber, String folder ) throws FileNotFoundException{
+    public static FileReader getFileReader ( String fileNumber, String folder ) throws FileNotFoundException {
         String absolutePath = new File("").getAbsolutePath();
         return new FileReader(absolutePath+"/files/"+folder+"/"+file_prefix+fileNumber+file_format);
+    }
+
+    public static FileReader getFileReaderForExample ( String folder ) throws FileNotFoundException {
+        String absolutePath = new File("").getAbsolutePath();
+        return new FileReader(absolutePath+"/files/"+folder+"/example"+file_format);
     }
 
     public static double computeResidual(double newValueFunction, double oldValueFunction) {
         return Math.abs(newValueFunction - oldValueFunction);
     }
 
-    public static Map.Entry<Double, MDPAction> computeValueFunctionWithBellmanBackup( MDPState state ) {
+    public static Map.Entry<Double, MDPAction> computeValueFunctionWithBellmanBackup( MDPState state, int iteration ) {
         
         double minimal_value = Double.MAX_VALUE;
         MDPAction argmin = null;
@@ -86,7 +101,7 @@ public class Main {
                 MDPState sucessor = sucessorAndPossibility.getKey();
                 if ( state.x == sucessor.x && state.y == sucessor.y ) continue;
                 else {
-                    sum += (action.cost + sucessor.valuesFunctions.get(sucessor.valuesFunctions.size()-1));
+                    sum += (action.cost + sucessor.valuesFunctions.get(iteration-1));
                     // ALERTA PARA: ele realmente pega o valor da iteracao atual ou pega de outra iteracao?
                 }
             }
@@ -95,8 +110,7 @@ public class Main {
                 for (Map.Entry<MDPState, PD> pair : action.sucessorAndPossibility.entrySet()) {
                     MDPState sucessor = pair.getKey();
                     PD possibility = pair.getValue();
-                    sum += (possibility.probabilityOfAction * sucessor.valuesFunctions.get(
-                                                        sucessor.valuesFunctions.size()-1));
+                    sum += (possibility.probabilityOfAction * sucessor.valuesFunctions.get(iteration-1));
                 }
             }
 
@@ -118,29 +132,43 @@ public class Main {
             state.valuesFunctions.add(0.0);
         }
         int iterations = 0;
-        double maxResidual = 0;
+        double minResidual = Double.MAX_VALUE;
         
-        while ( maxResidual < problem.epsilon ) {
+        do {
             iterations++;
-            maxResidual = 0;
+            double localResidual = 0;
+
             for (MDPState state : problem.states) {
-                Map.Entry<Double, MDPAction> pair = computeValueFunctionWithBellmanBackup(state);
-                double newValueFunction = pair.getKey();
-                MDPAction argmin = pair.getValue();
-                
-                maxResidual = Math.max(
-                    maxResidual,
-                    computeResidual(newValueFunction,state.valuesFunctions.get(state.valuesFunctions.size()-1))
-                );
-                state.valuesFunctions.add(newValueFunction);
+                if (!state.equals(problem.goalState)) {
+                    Map.Entry<Double, MDPAction> pair = computeValueFunctionWithBellmanBackup(state, iterations);
+                    double newValueFunction = pair.getKey();
+                    MDPAction argmin = pair.getValue();
+                    
+                    localResidual = Math.max(
+                        localResidual,
+                        computeResidual(newValueFunction,state.valuesFunctions.get(state.valuesFunctions.size()-1))
+                    );
+
+                    state.valuesFunctions.add(newValueFunction);
+                    state.bestAction = argmin;
+                }
+                else {
+                    state.valuesFunctions.add(0.0);
+                }
             }
-        }
+
+            minResidual = Math.min(minResidual, localResidual);
+        } while ( minResidual > problem.epsilon);
 
         long finishTime = System.currentTimeMillis();
         long diff = finishTime - initTime;
         System.out.println("Iteration Value Time: " + diff + "ms");
+        System.out.println("Iterations: " + iterations);
 
-        //retorna política ?
+        for ( MDPState state : problem.states ) {
+            System.out.println("s: " + "x" + state.x + "y" + state.y);
+            if (!state.equals(problem.goalState)) System.out.println(state.bestAction.actionName);
+        }
     }
 
     public static void IterationPolicy( Problem problem ) {

@@ -16,7 +16,7 @@ public class Problem {
     public MDPState[] states;
     public MDPState initialState;
     public MDPState goalState;
-    public double epsilon = 0.1;
+    public double epsilon = 0.0001;
 
     public Problem() {
         
@@ -138,7 +138,7 @@ public class Problem {
         
         problem.states = states.values().toArray(new MDPState[states.size()]);
         // for ( MDPState state : problem.states ) {
-        //     if ( state.x == 20 && state.y == 20 ) {
+            
         //         System.out.println(
         //             "x: " + state.x + " y: " + state.y
         //         );
@@ -156,7 +156,7 @@ public class Problem {
         //                 );
         //             }
         //         }
-        //     }
+            
         // }
 
         long finishTime = System.currentTimeMillis();
