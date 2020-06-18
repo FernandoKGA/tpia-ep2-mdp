@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.security.KeyStore.Entry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -14,6 +15,7 @@ import java.util.AbstractMap.SimpleEntry;
 
 import src.MDPAction;
 import src.MDPState;
+import src.PD;
 
 public class Main {
     static final String file_prefix = "navigation_";
@@ -27,8 +29,8 @@ public class Main {
          * -f navigation_number
          * -r navigation_number
          * 
-         * -f -> fixed
-         * -r -> random
+         * -f -> FixedGoalInitialState
+         * -r -> RandomGoalInitialState
          * navigation_number goes from 1 to 10
          */
 
@@ -39,13 +41,13 @@ public class Main {
             case "-f":
                 file = getFileReader(args[1], fixedGoalInitialState);
                 br = new BufferedReader(file);
-                problem = createProblem(br);
+                problem = Problem.createProblem(br);
                 file.close();
                 break;
             case "-r":
                 file = getFileReader(args[1], randomGoalInitialState);
                 br = new BufferedReader(file);
-                problem = createProblem(br);
+                problem = Problem.createProblem(br);
                 file.close();
                 break;
             default:
@@ -53,9 +55,12 @@ public class Main {
         }
 
         //executa algoritmos
+
         //Iteração de valor
-        IterationValue(problem);
+        //IterationValue(problem);
+
         //Iteração de política
+        //IterationPolicy(problem);
     }
 
     public static FileReader getFileReader (String fileNumber, String folder ) throws FileNotFoundException{
@@ -63,208 +68,112 @@ public class Main {
         return new FileReader(absolutePath+"/files/"+folder+"/"+file_prefix+fileNumber+file_format);
     }
 
-    public static Problem createProblem( BufferedReader br ) throws IOException {
-        Problem problem = new Problem();
-        problem.actions = new HashMap<>();
-        Map<String, Map<String, Double>> costs = new HashMap<>();
+    public static double computeResidual(double newValueFunction, double oldValueFunction) {
+        return Math.abs(newValueFunction - oldValueFunction);
+    }
 
-        long initTime = System.currentTimeMillis();
-
-        while ( br.ready() ) {
-            String line = br.readLine();
-            
-            switch( line ) {
-                case "states":
-                    line = br.readLine();
-                    line = line.trim();
-                    problem.states = line.split(", ");
-                    break;
-
-                case "cost":
-                    line = br.readLine();
-                    line = line.trim();
-                    while( !line.equals("endcost") ) {
-                        String[] cost_line = line.split(" ");
-
-                        String currentState = cost_line[0];
-                        String actionName = cost_line[1];
-                        double cost = Double.parseDouble(cost_line[2]);
-
-                        if ( costs.containsKey(currentState) ) {
-                            Map<String, Double> costs_aux = costs.get(currentState);
-                            costs_aux.put(actionName, cost);
-                            costs.replace(currentState, costs_aux);
-                        }
-                        else {
-                            Map<String, Double> costs_aux = new HashMap<>();
-                            costs_aux.put(actionName, cost);
-                            costs.put(currentState, costs_aux);
-                        }
-
-                        line = br.readLine();
-                        line = line.trim();
-                    }
-                    break;
-
-                case "initialstate":
-                    line = br.readLine();
-                    line = line.trim();
-                    while( !line.equals("endinitialstate") ) {
-
-                        problem.initialState = line;
-
-                        line = br.readLine();
-                    }
-                    break;
-                
-                case "goalstate":
-                    line = br.readLine();
-                    line = line.trim();
-                    while( !line.equals("endgoalstate") ) {
-
-                        problem.goalState = line;
-
-                        line = br.readLine();
-                    }
-                    break;
-
-                default:
-                    if ( !line.equals("") ){
-                        if( line.contains("action") ) {
-                            line = line.trim();
-                            
-                            String[] action = line.split(" ");
-                            String actionName = action[1];
-
-                            line = br.readLine();
-                            while( !line.equals("endaction") ) {
-                                line = line.trim();
-
-                                action = line.split(" ");
-                                MDPAction mdpAction = new MDPAction(actionName, action[0],
-                                    action[1], Double.parseDouble(action[2]) , Double.parseDouble(action[3]) 
-                                );
-
-                                if ( problem.actions.containsKey(mdpAction.currentState) ) {
-                                    List<MDPAction> currentStateAction = problem.actions.get(mdpAction.currentState);
-                                    currentStateAction.add(mdpAction);
-                                    problem.actions.replace(mdpAction.currentState, currentStateAction);
-                                }
-                                else {
-                                    List<MDPAction> mdpActions = new ArrayList<>();
-                                    mdpActions.add(mdpAction);
-                                    problem.actions.put(mdpAction.currentState, mdpActions);
-                                }
-                                
-                                line = br.readLine();
-                            }
-                        }
-                    }
-                    break;
-            }
-        }
+    public static Map.Entry<Double, MDPAction> computeValueFunctionWithBellmanBackup( MDPState state ) {
         
-        for ( String state : problem.states ) {
+        double minimal_value = Double.MAX_VALUE;
+        MDPAction argmin = null;
+
+        for ( MDPAction action : state.actions ) {
             
-            List<MDPAction> actions = problem.actions.get(state);
-            Map<String,Double> actions_costs = costs.get(state);
+            double sum = 0;
 
-            if ( actions_costs != null && actions != null ) {
-                for ( MDPAction action : actions ) {
-                    if ( actions_costs.containsKey(action.actionName) ) {
-                        action.cost = actions_costs.get(action.actionName);
-                    }
-                }    
-
-                problem.actions.replace(state, actions);
-            }
-            else {
-                // se um dos dois eh nulo
-                if ( ( actions != null && actions_costs == null ) 
-                        || ( ( actions == null && actions_costs != null ) ) ) {
-                    // verifica se as acoes nao sao para o mesmo estado
-                    for ( MDPAction action : actions ) {
-                        if ( !action.currentState.equals(action.successorState) ) {
-                            String message = "Invalid state '" + state + "' actions join, ";
-                            if ( actions == null ) {
-                                message += "doesn't has actions.";
-                            }
-                            if ( actions_costs == null ) {
-                                message += "doesn't has costs for actions.";
-                            }
-                            
-                            throw new NullPointerException(message);
-                        }
-                    }
+            if ( action.sucessorAndPossibility.size() == 1 ) {
+                Map.Entry<MDPState, PD> sucessorAndPossibility = action.sucessorAndPossibility.entrySet().iterator().next();
+                MDPState sucessor = sucessorAndPossibility.getKey();
+                if ( state.x == sucessor.x && state.y == sucessor.y ) continue;
+                else {
+                    sum += (action.cost + sucessor.valuesFunctions.get(sucessor.valuesFunctions.size()-1));
+                    // ALERTA PARA: ele realmente pega o valor da iteracao atual ou pega de outra iteracao?
                 }
             }
+            else {
+                sum += action.cost;
+                for (Map.Entry<MDPState, PD> pair : action.sucessorAndPossibility.entrySet()) {
+                    MDPState sucessor = pair.getKey();
+                    PD possibility = pair.getValue();
+                    sum += (possibility.probabilityOfAction * sucessor.valuesFunctions.get(
+                                                        sucessor.valuesFunctions.size()-1));
+                }
+            }
+
+            if (minimal_value > sum) {
+                minimal_value = sum;
+                argmin = action;
+            }
         }
 
-        long finishTime = System.currentTimeMillis();
-        long diff = finishTime - initTime;
-        System.out.println("Parsing time: " + diff + "ms");
-
-        return problem;
+        SimpleEntry<Double, MDPAction> result = new SimpleEntry<Double,MDPAction>(minimal_value, argmin);
+        return result;
     }
 
     public static void IterationValue( Problem problem ) {
         long initTime = System.currentTimeMillis();
-        
-        int maximum_x = 0;
-        int maximum_y = 0;
-        
-        for ( String state : problem.states ) {
-            String[] state_strings = state.split("-");
-            String[] coords = state_strings[2].split("y");
-            String x_coord = coords[0].replace("x", "");
 
-            int x = Integer.parseInt(x_coord);
-            int y = Integer.parseInt(coords[1]);
-            if ( maximum_x < x ) maximum_x = x;
-            if ( maximum_y < y ) maximum_y = y;
+        //initialize V0
+        for (MDPState state : problem.states) {
+            state.valuesFunctions.add(0.0);
         }
-
-        // builds grid
-        MDPState[][] grid = new MDPState[maximum_x+1][maximum_y+1];
-
-        for ( String state : problem.states ) {
-            String[] state_strings = state.split("-");
-            String[] coords = state_strings[2].split("y");
-            String x_coord = coords[0].replace("x", "");
-
-            int x = Integer.parseInt(x_coord);
-            int y = Integer.parseInt(coords[1]);
-
-            grid[x][y] = new MDPState(x, y, problem.actions.get(state));
-        }
-
-        for ( int i = 0; i < grid.length; i++ ) {
-            for ( int j = 0; j < grid[0].length; j++ ) {
-                if ( grid[i][j] != null) {
-                    System.out.println(i + " " + j);
-                }
+        int iterations = 0;
+        double maxResidual = 0;
+        
+        while ( maxResidual < problem.epsilon ) {
+            iterations++;
+            maxResidual = 0;
+            for (MDPState state : problem.states) {
+                Map.Entry<Double, MDPAction> pair = computeValueFunctionWithBellmanBackup(state);
+                double newValueFunction = pair.getKey();
+                MDPAction argmin = pair.getValue();
+                
+                maxResidual = Math.max(
+                    maxResidual,
+                    computeResidual(newValueFunction,state.valuesFunctions.get(state.valuesFunctions.size()-1))
+                );
+                state.valuesFunctions.add(newValueFunction);
             }
         }
-
-        //initialize V0 - precisa ver como criar isso
-        int n = 0;
-        double residual = 0.0;
-        
-        //while
-        //repeat
 
         long finishTime = System.currentTimeMillis();
         long diff = finishTime - initTime;
         System.out.println("Iteration Value Time: " + diff + "ms");
+
+        //retorna política ?
     }
 
     public static void IterationPolicy( Problem problem ) {
         long initTime = System.currentTimeMillis();
         
 
-
         long finishTime = System.currentTimeMillis();
         long diff = finishTime - initTime;
         System.out.println("Iteration Policy Time: " + diff + "ms");
+    }
+
+    public static MDPState[][] createGrid( Problem problem ) {
+        // int maximum_x = 0;
+        // int maximum_y = 0;
+        
+        // for ( String state : problem.states ) {
+            
+        //     if ( maximum_x < x ) maximum_x = x;
+        //     if ( maximum_y < y ) maximum_y = y;
+        // }
+
+         // builds grid
+        // MDPState[][] grid = new MDPState[maximum_x+1][maximum_y+1];
+        //     grid[x][y] = new MDPState(x, y, problem.actions.get(state));
+        // }
+
+        // for ( int i = 0; i < grid.length; i++ ) {
+        //     for ( int j = 0; j < grid[0].length; j++ ) {
+        //         if ( grid[i][j] != null) {
+        //             System.out.println(i + " " + j);
+        //         }
+        //     }
+        // }
+        return null;
     }
 }
