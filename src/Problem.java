@@ -10,6 +10,7 @@ import java.util.List;
 
 import src.MDPAction;
 import src.MDPState;
+import src.PD;
 
 public class Problem {
     public MDPState[] states;
@@ -25,8 +26,6 @@ public class Problem {
         Problem problem = new Problem();
         String[] statesStr = new String[1]; //just initialize
         Map<String, MDPState> states = new HashMap<>();
-        Map<String, List<MDPAction>> problemActions = new HashMap<>();
-        Map<String, Map<String, Double>> costs = new HashMap<>();
 
         long initTime = System.currentTimeMillis();
 
@@ -39,27 +38,28 @@ public class Problem {
                     line = line.trim();
                     statesStr = line.split(", ");
                     
+                    for ( String state : statesStr ) {
+                        states.put(state, new MDPState(state));
+                    }
+
                     break;
 
                 case "cost":
                     line = br.readLine();
                     line = line.trim();
                     while( !line.equals("endcost") ) {
-                        String[] cost_line = line.split(" ");
+                        String[] costLine = line.split(" ");
 
-                        String currentState = cost_line[0];
-                        String actionName = cost_line[1];
-                        double cost = Double.parseDouble(cost_line[2]);
+                        String currentState = costLine[0];
+                        String actionName = costLine[1];
+                        double cost = Double.parseDouble(costLine[2]);
 
-                        if ( costs.containsKey(currentState) ) {
-                            Map<String, Double> costs_aux = costs.get(currentState);
-                            costs_aux.put(actionName, cost);
-                            costs.replace(currentState, costs_aux);
-                        }
-                        else {
-                            Map<String, Double> costs_aux = new HashMap<>();
-                            costs_aux.put(actionName, cost);
-                            costs.put(currentState, costs_aux);
+                        MDPState state = states.get(currentState);
+                        for ( MDPAction action : state.actions ) {
+                            if ( action.actionName.equals(actionName) ) {
+                                action.cost = cost;
+                                break;
+                            }
                         }
 
                         line = br.readLine();
@@ -72,7 +72,7 @@ public class Problem {
                     line = line.trim();
                     while( !line.equals("endinitialstate") ) {
                         
-                        problem.initialState = new MDPState(line);
+                        problem.initialState = states.get(line);
 
                         line = br.readLine();
                     }
@@ -83,7 +83,7 @@ public class Problem {
                     line = line.trim();
                     while( !line.equals("endgoalstate") ) {
 
-                        problem.goalState = new MDPState(line);
+                        problem.goalState = states.get(line);
 
                         line = br.readLine();
                     }
@@ -102,21 +102,32 @@ public class Problem {
                                 line = line.trim();
 
                                 action = line.split(" ");
-                                MDPAction mdpAction = new MDPAction(actionName, action[0],
-                                    action[1], Double.parseDouble(action[2]) , Double.parseDouble(action[3]) 
-                                );
 
-                                if ( problemActions.containsKey(mdpAction.currentState) ) {
-                                    List<MDPAction> currentStateAction = problemActions.get(mdpAction.currentState);
-                                    currentStateAction.add(mdpAction);
-                                    problemActions.replace(mdpAction.currentState, currentStateAction);
+                                String currentStateStr = action[0]; //usar para pesquisar no mapa
+                                MDPState currentState = states.get(currentStateStr);
+
+                                String sucessorStateStr = action[1]; //pegar o estado sucessor no mapa
+                                MDPState sucessorState = states.get(sucessorStateStr);
+
+                                double probability = Double.parseDouble(action[2]);
+                                double discard = Double.parseDouble(action[3]);
+                                PD pd = new PD(probability, discard);
+
+                                boolean hasAction = false;
+                                for ( MDPAction mdpAction : currentState.actions ) {
+                                    if ( mdpAction.actionName.equals(actionName) ) {
+                                        mdpAction.sucessorAndPossibility.put(sucessorState, pd);
+                                        hasAction = true;
+                                        break;
+                                    }
                                 }
-                                else {
-                                    List<MDPAction> mdpActions = new ArrayList<>();
-                                    mdpActions.add(mdpAction);
-                                    problemActions.put(mdpAction.currentState, mdpActions);
+
+                                if ( !hasAction ) {
+                                    MDPAction mdpAction = new MDPAction(actionName);
+                                    mdpAction.sucessorAndPossibility.put(sucessorState, pd);
+                                    currentState.actions.add(mdpAction);
                                 }
-                                
+
                                 line = br.readLine();
                             }
                         }
@@ -125,49 +136,28 @@ public class Problem {
             }
         }
         
-        problem.states = new MDPState[statesStr.length];
-        int cont_state = 0;
+        problem.states = states.values().toArray(new MDPState[states.size()]);
+        // for ( MDPState state : problem.states ) {
+        //     if ( state.x == 20 && state.y == 20 ) {
+        //         System.out.println(
+        //             "x: " + state.x + " y: " + state.y
+        //         );
 
-        // create MDP state with actions and its costs
-        for ( String state : statesStr ) {
+        //         for ( MDPAction action : state.actions ) {
+        //             System.out.println(
+        //                 "action: " + action.actionName + " cost: " + action.cost
+        //             );
 
-            List<MDPAction> actions = problemActions.get(state);
-            Map<String,Double> actions_costs = costs.get(state);
-            MDPState mdpState = new MDPState(state); 
-
-            if ( actions_costs != null && actions != null ) {
-                for ( MDPAction action : actions ) {
-                    if ( actions_costs.containsKey(action.actionName) ) {
-                        action.cost = actions_costs.get(action.actionName);
-                    }
-                }    
-
-                problemActions.replace(state, actions);
-            }
-            else {
-                // se um dos dois eh nulo
-                if ( ( actions != null && actions_costs == null ) 
-                        || ( ( actions == null && actions_costs != null ) ) ) {
-                    // verifica se as acoes nao sao para o mesmo estado
-                    for ( MDPAction action : actions ) {
-                        if ( !action.currentState.equals(action.successorState) ) {
-                            String message = "Invalid state '" + state + "' actions join, ";
-                            if ( actions == null ) {
-                                message += "doesn't has actions.";
-                            }
-                            if ( actions_costs == null ) {
-                                message += "doesn't has costs for actions.";
-                            }
-                            
-                            throw new NullPointerException(message);
-                        }
-                    }
-                }
-            }
-            mdpState.actions = actions;
-            problem.states[cont_state] = mdpState;
-            cont_state ++;
-        }
+        //             for ( Map.Entry<MDPState, PD> pair : action.sucessorAndPossibility.entrySet() ) {
+        //                 MDPState auxState = pair.getKey();
+        //                 PD pd = pair.getValue();
+        //                 System.out.println(
+        //                     "suc: " + "x" + auxState.x + "y" + auxState.y + " prob: " + pd.probabilityOfAction
+        //                 );
+        //             }
+        //         }
+        //     }
+        // }
 
         long finishTime = System.currentTimeMillis();
         long diff = finishTime - initTime;

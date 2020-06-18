@@ -1,5 +1,6 @@
 package src;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -7,7 +8,7 @@ import src.MDPState;
 
 public class MDPAction {
     public String actionName;
-    public Map<MDPState, PD> sucessorAndPossibility;
+    public Map<MDPState, PD> sucessorAndPossibility = new HashMap<>();
     public double cost;
 
     public MDPAction() {

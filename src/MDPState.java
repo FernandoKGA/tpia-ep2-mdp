@@ -8,7 +8,7 @@ import src.MDPAction;
 public class MDPState {
     public int x;
     public int y;
-    public List<MDPAction> actions;
+    public List<MDPAction> actions = new ArrayList<>();
     public List<Double> valuesFunctions = new ArrayList<>();
     // mudar tipo para guardar acao tambem
 

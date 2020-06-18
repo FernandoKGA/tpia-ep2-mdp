@@ -55,9 +55,12 @@ public class Main {
         }
 
         //executa algoritmos
+
         //Iteração de valor
-        IterationValue(problem);
+        //IterationValue(problem);
+
         //Iteração de política
+        //IterationPolicy(problem);
     }
 
     public static FileReader getFileReader (String fileNumber, String folder ) throws FileNotFoundException{
@@ -102,7 +105,9 @@ public class Main {
                 argmin = action;
             }
         }
-        return Map.entry(minimal_value, argmin);
+
+        SimpleEntry<Double, MDPAction> result = new SimpleEntry<Double,MDPAction>(minimal_value, argmin);
+        return result;
     }
 
     public static void IterationValue( Problem problem ) {
@@ -141,7 +146,6 @@ public class Main {
     public static void IterationPolicy( Problem problem ) {
         long initTime = System.currentTimeMillis();
         
-
 
         long finishTime = System.currentTimeMillis();
         long diff = finishTime - initTime;
