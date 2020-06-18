@@ -164,11 +164,6 @@ public class Main {
         long diff = finishTime - initTime;
         System.out.println("Iteration Value Time: " + diff + "ms");
         System.out.println("Iterations: " + iterations);
-
-        for ( MDPState state : problem.states ) {
-            System.out.println("s: " + "x" + state.x + "y" + state.y);
-            if (!state.equals(problem.goalState)) System.out.println(state.bestAction.actionName);
-        }
     }
 
     public static void IterationPolicy( Problem problem ) {
