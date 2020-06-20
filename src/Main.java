@@ -166,13 +166,86 @@ public class Main {
         System.out.println("Iterations: " + iterations);
     }
 
+    public static void evaluatePolicy( MDPState state, int iteration ) {
+        MDPAction bestAction = state.bestAction;
+        double sum = bestAction.cost;
+
+        if ( bestAction.sucessorAndPossibility.size() == 1 ) {
+            Map.Entry<MDPState, PD> sucessorAndPossibility = bestAction.sucessorAndPossibility.entrySet().iterator().next();
+            MDPState sucessor = sucessorAndPossibility.getKey();
+            sum += sucessor.valuesFunctions.get(iteration-1);
+        }
+        else {
+            for (Map.Entry<MDPState, PD> pair : bestAction.sucessorAndPossibility.entrySet()) {
+                MDPState sucessor = pair.getKey();
+                PD possibility = pair.getValue();
+                sum += (possibility.probabilityOfAction * sucessor.valuesFunctions.get(iteration-1));
+            }
+        }
+
+        state.valuesFunctions.add(sum);
+    } 
+
     public static void IterationPolicy( Problem problem ) {
         long initTime = System.currentTimeMillis();
         
+        //assign an arbitrary assignment of pi0 to each state
+        for ( MDPState state : problem.states ) {
+            // se estado goal, nao atribui acao para ele
+            if ( state.x == problem.goalState.x && state.y == problem.goalState.y ) continue;
+
+            for ( MDPAction action : state.actions ) {
+                
+                // se acao so tem 1 sucessor
+                if ( action.sucessorAndPossibility.size() == 1 ) {
+                    Map.Entry<MDPState, PD> sucessorAndPossibility = action.sucessorAndPossibility.entrySet().iterator().next();
+                    MDPState sucessor = sucessorAndPossibility.getKey();
+
+                    // e o sucessor eh o proprio estado, vai pra proxima acao
+                    if ( state.x == sucessor.x && state.y == sucessor.y ) continue;
+                    else {
+                        state.bestAction = action;
+                        break;
+                    }
+                }
+                else {
+                    state.bestAction = action;
+                    break;
+                }
+            }
+        }
+
+        for ( MDPState state : problem.states ) {
+            state.valuesFunctions.add(0.0);
+        }
+
+        boolean hasChanged = true;
+        int iterations = 0;
+
+        do {
+            hasChanged = false;
+            iterations++;
+
+            // avalia a politica para cada estado
+            for ( MDPState state : problem.states ) {
+                evaluatePolicy(state, iterations);
+            }
+
+            // melhora a politica
+            for ( MDPState state : problem.states ) {
+                Map.Entry<Double, MDPAction> result = computeValueFunctionWithBellmanBackup(state, iterations);
+                if ( !state.bestAction.actionName.equals(result.getValue().actionName)) {
+                    hasChanged = true;
+                    state.bestAction = result.getValue();
+                }
+            }
+
+        } while ( hasChanged );
 
         long finishTime = System.currentTimeMillis();
         long diff = finishTime - initTime;
-        System.out.println("Iteration Policy Time: " + diff + "ms");
+        System.out.println("Iteration Value Time: " + diff + "ms");
+        System.out.println("Iterations: " + iterations);
     }
 
     public static MDPState[][] createGrid( Problem problem ) {
