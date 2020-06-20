@@ -67,10 +67,10 @@ public class Main {
         //executa algoritmos
 
         //Iteração de valor
-        IterationValue(problem);
+        //IterationValue(problem);
 
         //Iteração de política
-        //IterationPolicy(problem);
+        IterationPolicy(problem);
     }
 
     public static FileReader getFileReader ( String fileNumber, String folder ) throws FileNotFoundException {
@@ -213,27 +213,38 @@ public class Main {
                     break;
                 }
             }
+            state.printStateCoords();
+            System.out.println(state.bestAction.actionName + " " + state.bestAction.cost);
         }
 
         for ( MDPState state : problem.states ) {
             state.valuesFunctions.add(0.0);
         }
-
+        
         boolean hasChanged = true;
         int iterations = 0;
 
         do {
             hasChanged = false;
             iterations++;
+            System.out.println(iterations);
 
             // avalia a politica para cada estado
             for ( MDPState state : problem.states ) {
+                if ( state.x == problem.goalState.x && state.y == problem.goalState.y ) {
+                    state.valuesFunctions.add(0.0);
+                    continue;
+                }
                 evaluatePolicy(state, iterations);
             }
 
             // melhora a politica
             for ( MDPState state : problem.states ) {
+                state.printStateCoords();
+                if ( state.x == problem.goalState.x && state.y == problem.goalState.y ) continue;
                 Map.Entry<Double, MDPAction> result = computeValueFunctionWithBellmanBackup(state, iterations);
+                
+                System.out.println("V: " + result.getKey() + " " + result.getValue().actionName + " cost: " + result.getValue().cost);
                 if ( !state.bestAction.actionName.equals(result.getValue().actionName)) {
                     hasChanged = true;
                     state.bestAction = result.getValue();
@@ -244,7 +255,7 @@ public class Main {
 
         long finishTime = System.currentTimeMillis();
         long diff = finishTime - initTime;
-        System.out.println("Iteration Value Time: " + diff + "ms");
+        System.out.println("Iteration Policy Time: " + diff + "ms");
         System.out.println("Iterations: " + iterations);
     }
 
