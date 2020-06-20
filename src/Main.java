@@ -167,13 +167,18 @@ public class Main {
     }
 
     public static void evaluatePolicy( MDPState state, int iteration ) {
+        //state.printStateCoords();
+        //System.out.println("ep");
         MDPAction bestAction = state.bestAction;
+        //System.out.println(bestAction.actionName);
         double sum = bestAction.cost;
+        //System.out.println(sum);
 
         if ( bestAction.sucessorAndPossibility.size() == 1 ) {
             Map.Entry<MDPState, PD> sucessorAndPossibility = bestAction.sucessorAndPossibility.entrySet().iterator().next();
             MDPState sucessor = sucessorAndPossibility.getKey();
             sum += sucessor.valuesFunctions.get(iteration-1);
+            //System.out.println("bestaction with 1 suc: " + sum);
         }
         else {
             for (Map.Entry<MDPState, PD> pair : bestAction.sucessorAndPossibility.entrySet()) {
@@ -181,6 +186,7 @@ public class Main {
                 PD possibility = pair.getValue();
                 sum += (possibility.probabilityOfAction * sucessor.valuesFunctions.get(iteration-1));
             }
+            //System.out.println("bestaction with more than one suc: " + sum);
         }
 
         state.valuesFunctions.add(sum);
@@ -213,12 +219,16 @@ public class Main {
                     break;
                 }
             }
-            state.printStateCoords();
-            System.out.println(state.bestAction.actionName + " " + state.bestAction.cost);
+            // state.printStateCoords();
+            // System.out.println(state.bestAction.actionName + " " + state.bestAction.cost);
         }
 
         for ( MDPState state : problem.states ) {
-            state.valuesFunctions.add(0.0);
+            if ( state.x == problem.goalState.x && state.y == problem.goalState.y ) {
+                state.valuesFunctions.add(0.0);    
+                continue;
+            }
+            state.valuesFunctions.add(state.bestAction.cost);
         }
         
         boolean hasChanged = true;
@@ -227,7 +237,7 @@ public class Main {
         do {
             hasChanged = false;
             iterations++;
-            System.out.println(iterations);
+            //System.out.println(iterations);
 
             // avalia a politica para cada estado
             for ( MDPState state : problem.states ) {
@@ -240,11 +250,11 @@ public class Main {
 
             // melhora a politica
             for ( MDPState state : problem.states ) {
-                state.printStateCoords();
+                //state.printStateCoords();
                 if ( state.x == problem.goalState.x && state.y == problem.goalState.y ) continue;
-                Map.Entry<Double, MDPAction> result = computeValueFunctionWithBellmanBackup(state, iterations);
+                Map.Entry<Double, MDPAction> result = computeValueFunctionWithBellmanBackup(state, iterations+1);
                 
-                System.out.println("V: " + result.getKey() + " " + result.getValue().actionName + " cost: " + result.getValue().cost);
+                //System.out.println("V: " + result.getKey() + " " + result.getValue().actionName + " cost: " + result.getValue().cost);
                 if ( !state.bestAction.actionName.equals(result.getValue().actionName)) {
                     hasChanged = true;
                     state.bestAction = result.getValue();
