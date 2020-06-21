@@ -3,32 +3,29 @@ states
 endstates
 
 action move-right
-    robot-at-x1y1 robot-at-x3y1 1.000000 1.000000
+    robot-at-x1y1 robot-at-x2y1 1.000000 1.000000
+    robot-at-x2y1 robot-at-x3y1 1.000000 1.000000
     robot-at-x3y1 robot-at-x5y1 1.000000 1.000000
+    robot-at-x4y1 robot-at-x5y1 1.000000 1.000000
     robot-at-x5y1 robot-at-x6y1 1.000000 1.000000
 endaction
 
-action move-down
-    robot-at-x1y1 robot-at-x2y1 1.000000 1.000000
+action move-left
+    robot-at-x1y1 robot-at-x3y1 1.000000 1.000000
     robot-at-x3y1 robot-at-x2y1 1.000000 1.000000
-    robot-at-x5y1 robot-at-x4y1 0.400000 1.000000
     robot-at-x5y1 robot-at-x6y1 0.600000 1.000000
-endaction
-
-action move-up
-    robot-at-x2y1 robot-at-x3y1 1.000000 1.000000
-    robot-at-x4y1 robot-at-x5y1 1.000000 1.000000
+    robot-at-x5y1 robot-at-x4y1 0.400000 1.000000
 endaction
 
 cost
     robot-at-x1y1 move-right 1.000000
+    robot-at-x2y1 move-right 1.000000
     robot-at-x3y1 move-right 1.000000
+    robot-at-x4y1 move-right 1.000000
     robot-at-x5y1 move-right 5.000000
-    robot-at-x1y1 move-down 1.000000
-    robot-at-x3y1 move-down 1.000000
-    robot-at-x5y1 move-down 2.000000
-    robot-at-x2y1 move-up 1.000000
-    robot-at-x4y1 move-up 1.000000
+    robot-at-x1y1 move-left 1.000000
+    robot-at-x3y1 move-left 1.000000
+    robot-at-x5y1 move-left 2.000000    
 endcost
 
 initialstate

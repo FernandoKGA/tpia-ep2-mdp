@@ -16,7 +16,7 @@ public class Problem {
     public MDPState[] states;
     public MDPState initialState;
     public MDPState goalState;
-    public double epsilon = 0.0001;
+    public double epsilon = 0.1;
 
     public Problem() {
         

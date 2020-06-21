@@ -9,6 +9,7 @@ import java.security.KeyStore.Entry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.AbstractMap.SimpleEntry;
@@ -17,6 +18,7 @@ import src.MDPAction;
 import src.MDPState;
 import src.PD;
 import src.Problem;
+import src.DD;
 
 public class Main {
     static final String file_prefix = "navigation_";
@@ -166,30 +168,70 @@ public class Main {
         System.out.println("Iterations: " + iterations);
     }
 
-    public static void evaluatePolicy( MDPState state, int iteration ) {
-        //state.printStateCoords();
-        //System.out.println("ep");
-        MDPAction bestAction = state.bestAction;
-        //System.out.println(bestAction.actionName);
-        double sum = bestAction.cost;
-        //System.out.println(sum);
+    public static void evaluatePolicy( Problem problem ) {
+        int iterations = 0;
+        double maxResidual = 0;
+        
+        // lista de valores local dos estados por iteracao (nao a que esta no problema)
+        Map<MDPState, DD> localValuesFunction = new HashMap<>();
 
-        if ( bestAction.sucessorAndPossibility.size() == 1 ) {
-            Map.Entry<MDPState, PD> sucessorAndPossibility = bestAction.sucessorAndPossibility.entrySet().iterator().next();
-            MDPState sucessor = sucessorAndPossibility.getKey();
-            sum += sucessor.valuesFunctions.get(iteration-1);
-            //System.out.println("bestaction with 1 suc: " + sum);
+        for ( MDPState state : problem.states ) {
+            DD dd = new DD();
+            dd.firstDouble = state.valuesFunctions.get(state.valuesFunctions.size() - 1);
+            localValuesFunction.put(state, dd);
         }
-        else {
-            for (Map.Entry<MDPState, PD> pair : bestAction.sucessorAndPossibility.entrySet()) {
-                MDPState sucessor = pair.getKey();
-                PD possibility = pair.getValue();
-                sum += (possibility.probabilityOfAction * sucessor.valuesFunctions.get(iteration-1));
+
+        //double minResidual = Double.MAX_VALUE;
+        
+        do {       
+            iterations++;
+            maxResidual = 0;
+
+            for ( MDPState state : problem.states ) {
+                if (!state.equals(problem.goalState)) {
+                    MDPAction bestAction = state.bestAction;
+                    
+                    double v = bestAction.cost;
+                    for ( Map.Entry<MDPState, PD> pair : bestAction.sucessorAndPossibility.entrySet() ) {
+                        MDPState sucessorState = pair.getKey();
+                        double probability = pair.getValue().probabilityOfAction;
+
+                        v += (localValuesFunction.get(sucessorState).firstDouble * probability);
+                    }
+
+                    // state.printStateCoords();
+                    // System.out.println(v);
+
+                    maxResidual = Math.max(
+                        maxResidual, 
+                        computeResidual(
+                            localValuesFunction.get(state).firstDouble,
+                            v
+                        )
+                    );
+                    
+                    localValuesFunction.get(state).secondDouble = v;
+                }
+                else {
+                    localValuesFunction.get(state).secondDouble = 0.0;
+                }
             }
-            //System.out.println("bestaction with more than one suc: " + sum);
-        }
 
-        state.valuesFunctions.add(sum);
+            for ( MDPState state : problem.states ) {
+                DD aux = localValuesFunction.get(state);
+                aux.firstDouble = aux.secondDouble;
+            }
+
+            //minResidual = Math.min(minResidual, maxResidual);
+
+            System.out.println("itr: " + iterations + " res: " + maxResidual);
+        } while ( maxResidual > problem.epsilon);
+
+        // atualiza os valuefunctions dos states com o valor do ultimo localvaluesfunction
+        for ( MDPState state : problem.states ) {
+            DD aux = localValuesFunction.get(state);
+            state.valuesFunctions.add(aux.secondDouble);
+        }
     } 
 
     public static void IterationPolicy( Problem problem ) {
@@ -224,11 +266,12 @@ public class Main {
         }
 
         for ( MDPState state : problem.states ) {
-            if ( state.x == problem.goalState.x && state.y == problem.goalState.y ) {
-                state.valuesFunctions.add(0.0);    
-                continue;
-            }
-            state.valuesFunctions.add(state.bestAction.cost);
+            state.valuesFunctions.add(0.0);    
+            // if ( state.x == problem.goalState.x && state.y == problem.goalState.y ) {
+                
+            //     continue;
+            // }
+            // state.valuesFunctions.add(state.bestAction.cost);
         }
         
         boolean hasChanged = true;
@@ -237,16 +280,9 @@ public class Main {
         do {
             hasChanged = false;
             iterations++;
-            //System.out.println(iterations);
+            System.out.println(iterations);
 
-            // avalia a politica para cada estado
-            for ( MDPState state : problem.states ) {
-                if ( state.x == problem.goalState.x && state.y == problem.goalState.y ) {
-                    state.valuesFunctions.add(0.0);
-                    continue;
-                }
-                evaluatePolicy(state, iterations);
-            }
+            evaluatePolicy(problem);
 
             // melhora a politica
             for ( MDPState state : problem.states ) {
