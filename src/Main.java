@@ -242,8 +242,8 @@ public class Main {
             // se estado goal, nao atribui acao para ele
             if ( state.x == problem.goalState.x && state.y == problem.goalState.y ) continue;
 
+            Map<String, MDPAction> localActions = new HashMap<>();
             for ( MDPAction action : state.actions ) {
-                
                 // se acao so tem 1 sucessor
                 if ( action.sucessorAndPossibility.size() == 1 ) {
                     Map.Entry<MDPState, PD> sucessorAndPossibility = action.sucessorAndPossibility.entrySet().iterator().next();
@@ -252,26 +252,36 @@ public class Main {
                     // e o sucessor eh o proprio estado, vai pra proxima acao
                     if ( state.x == sucessor.x && state.y == sucessor.y ) continue;
                     else {
-                        state.bestAction = action;
-                        break;
+                        localActions.put(action.actionName, action);
                     }
                 }
                 else {
-                    state.bestAction = action;
-                    break;
+                    localActions.put(action.actionName, action);
                 }
             }
-            // state.printStateCoords();
-            // System.out.println(state.bestAction.actionName + " " + state.bestAction.cost);
+            
+            if ( localActions.containsKey("move-east") ) {
+                state.bestAction = localActions.get("move-east");
+            }
+            else {
+                if ( localActions.containsKey("move-north") ) {
+                    state.bestAction = localActions.get("move-north");
+                }
+                else {
+                    if ( localActions.containsKey("move-south") ) {
+                        state.bestAction = localActions.get("move-south");
+                    }
+                    else {
+                        state.bestAction = localActions.get("move-west");
+                    }
+                }
+            }
+            //state.printStateCoords();
+            //System.out.println(state.bestAction.actionName + " " + state.bestAction.cost);
         }
 
         for ( MDPState state : problem.states ) {
-            state.valuesFunctions.add(0.0);    
-            // if ( state.x == problem.goalState.x && state.y == problem.goalState.y ) {
-                
-            //     continue;
-            // }
-            // state.valuesFunctions.add(state.bestAction.cost);
+            state.valuesFunctions.add(0.0);
         }
         
         boolean hasChanged = true;
