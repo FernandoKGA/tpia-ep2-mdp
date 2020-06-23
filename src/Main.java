@@ -32,12 +32,22 @@ public class Main {
     // Program must be run from top level folder (tpia-ep2-mdp) with command: java src/Main.java [-f | -r] [1-10]
     public static void main( String[] args ) throws Exception, java.io.IOException {
         /**
-         * -f navigation_number
-         * -r navigation_number
+         * args 0 -> type of file to use
+         * args 1 -> type of algorithm
+         * args 2 -> if is not example, the navigation_number
+         * args 3 -> print grid
          * 
+         * Types of files
          * -f -> FixedGoalInitialState
          * -r -> RandomGoalInitialState
-         * navigation_number goes from 1 to 10
+         * -ex -> RunningExample
+         * 
+         * Algorithms
+         * -iv -> Iteration Value
+         * -ip -> Iteration Policy
+         * mode == "-ex"
+         * java src/Main -ex -iv
+         * java src/Main -f -ip 1
          */
 
         FileReader file;
@@ -45,15 +55,15 @@ public class Main {
         Problem problem;
 
         String mode = args[0].trim();
-        switch(mode) {
+        switch( mode ) {
             case "-f":
-                file = getFileReader(args[1], fixedGoalInitialState);
+                file = getFileReader(args[2], fixedGoalInitialState);
                 br = new BufferedReader(file);
                 problem = Problem.createProblem(br);
                 file.close();
                 break;
             case "-r":
-                file = getFileReader(args[1], randomGoalInitialState);
+                file = getFileReader(args[2], randomGoalInitialState);
                 br = new BufferedReader(file);
                 problem = Problem.createProblem(br);
                 file.close();
@@ -69,15 +79,40 @@ public class Main {
         }
 
         //executa algoritmos
+        String alg = args[1].trim();
+        switch( alg ) {
+            case "-iv":
+                //Iteração de valor
+                IterationValue(problem);
+                break;
+            case "-ip":
+                //Iteração de política    
+                IterationPolicy(problem);
+                break;
+            default:
+                throw new IllegalArgumentException("Parameter " + "'" + alg + "'" + " not recognized. Choose between '-iv' or '-ip'.");
+        }
 
-        //Iteração de valor
-        IterationValue(problem);
-
-        //Iteração de política
-        //IterationPolicy(problem);
-
-        //printa grid
-        printGrid(problem);
+        if ( args.length == 4 ) {
+            if ( args[3].equals("-p") ) {
+                //printa grid
+                printGrid(problem);
+            }
+            else {
+                throw new IllegalArgumentException("Parameter " + "'" + args[3] + "'" + " not recognized.");
+            }
+        }
+        else {
+            if ( mode.equals("-ex") ) {
+                if ( args[2].equals("-p") ) {
+                    //printa grid
+                    printGrid(problem);
+                }
+                else {
+                    throw new IllegalArgumentException("Parameter " + "'" + args[2] + "'" + " not recognized.");
+                }
+            }
+        }
     }
 
     public static FileReader getFileReader ( String fileNumber, String folder ) throws FileNotFoundException {
@@ -335,12 +370,14 @@ public class Main {
             grid[state.x][state.y] = state;
         }
 
+        //https://rosettacode.org/wiki/Terminal_control/Display_an_extended_character
         PrintStream writer = new PrintStream(System.out, true, "UTF-8");
         for ( int j = grid[0].length-1; j >= 1; j-- ) {
             for ( int i = 1; i < grid.length; i++ ) {
                 MDPState state = grid[i][j];
                 if ( state != null ) {
-                    if (!state.equals(problem.goalState)) {
+                    if ( !state.equals(problem.goalState) ) {
+                        //https://unicode-table.com/pt/sets/arrow-symbols/
                         switch (state.bestAction.actionName) {
                             case "move-east":
                                 writer.print(" → "); //u+2192
