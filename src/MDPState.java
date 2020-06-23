@@ -39,4 +39,8 @@ public class MDPState {
         //coords = 18 20
         return coords;
     }
+
+    public void printStateCoords() {
+        System.out.println("State: " + "x" + x + "y" + y);
+    }
 }
