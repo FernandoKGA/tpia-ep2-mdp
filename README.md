@@ -1,6 +1,52 @@
 # tpia-ep2-mdp
 Planning Topics of Artificial Intelligence - EP2 - Markovian Decision Process
 
+---
+
+## Execução do Projeto
+
+### Compilar o projeto
+
+* Usuários de _Windows_, execute o código:
+
+        javac src/PD.java; javac src/DD.java; javac src/MDPAction.java; javac src/MDPState.java; javac src/Problem.java; javac src/Main.java
+    
+* Usuários do _Linux_ ou _MacOS_, execute o código:
+
+        javac src/PD.java && javac src/DD.java && javac src/MDPAction.java && javac src/MDPState.java && javac src/Problem.java && javac src/Main.java
+
+### Executar o projeto 
+
+Para arquivos do _FixedGoalInitialState_ ou _RandomGoalInitialState_:
+
+        java src/Main [-f | -r] [-vi | -pi] [1-10] [-p]
+
+Para arquivos do _RunningExample_:
+
+    java src/Main -ex [-vi | -pi] [-p]
+
+##### Parâmetros:
+
+###### `[-f | -r]`
+
+* `-f` para os arquivos do _FixedGoalInitialState_
+* `-r` para os arquivos do _RandomGoalInitialState_
+
+###### `[-vi | -pi]`
+
+* `-iv` para o algoritmo _Value Iteration_
+* `-ip` para o algoritmo _Policy Iteration_
+
+###### `[1-10]`
+
+* O número do arquivo, de 1 a 10
+
+###### `[p]`
+
+* Parâmetro OPCIONAL, caso queira imprimir o grid
+
+---
+
 ## Português - Brasileiro
 
 ### Padrão do arquivo '.net'
@@ -27,6 +73,8 @@ O arquivo tem:
     2. Estado Inicial
     3. Estado Final
     4. Marcação que indica que há uma parede do lado
+
+---
 
 ## English
 
