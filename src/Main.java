@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.security.KeyStore.Entry;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -69,10 +71,13 @@ public class Main {
         //executa algoritmos
 
         //Iteração de valor
-        //IterationValue(problem);
+        IterationValue(problem);
 
         //Iteração de política
-        IterationPolicy(problem);
+        //IterationPolicy(problem);
+
+        //printa grid
+        printGrid(problem);
     }
 
     public static FileReader getFileReader ( String fileNumber, String folder ) throws FileNotFoundException {
@@ -315,28 +320,51 @@ public class Main {
         System.out.println("Iterations: " + iterations);
     }
 
-    public static MDPState[][] createGrid( Problem problem ) {
-        // int maximum_x = 0;
-        // int maximum_y = 0;
+    public static void printGrid( Problem problem ) throws UnsupportedEncodingException{
+        int maximum_x = 0;
+        int maximum_y = 0;
         
-        // for ( String state : problem.states ) {
-            
-        //     if ( maximum_x < x ) maximum_x = x;
-        //     if ( maximum_y < y ) maximum_y = y;
-        // }
+        for ( MDPState state : problem.states ) {
+            if ( maximum_x < state.x ) maximum_x = state.x;
+            if ( maximum_y < state.y ) maximum_y = state.y;
+        }
 
-         // builds grid
-        // MDPState[][] grid = new MDPState[maximum_x+1][maximum_y+1];
-        //     grid[x][y] = new MDPState(x, y, problem.actions.get(state));
-        // }
+        // builds grid
+        MDPState[][] grid = new MDPState[maximum_x+1][maximum_y+1];
+        for ( MDPState state : problem.states ) {
+            grid[state.x][state.y] = state;
+        }
 
-        // for ( int i = 0; i < grid.length; i++ ) {
-        //     for ( int j = 0; j < grid[0].length; j++ ) {
-        //         if ( grid[i][j] != null) {
-        //             System.out.println(i + " " + j);
-        //         }
-        //     }
-        // }
-        return null;
+        PrintStream writer = new PrintStream(System.out, true, "UTF-8");
+        for ( int j = grid[0].length-1; j >= 1; j-- ) {
+            for ( int i = 1; i < grid.length; i++ ) {
+                MDPState state = grid[i][j];
+                if ( state != null ) {
+                    if (!state.equals(problem.goalState)) {
+                        switch (state.bestAction.actionName) {
+                            case "move-east":
+                                writer.print(" → "); //u+2192
+                                break;
+                            case "move-north":
+                                writer.print(" ↑ "); //u+2191
+                                break;
+                            case "move-west":
+                                writer.print(" ← "); //u+2190
+                                break;
+                            case "move-south":
+                                writer.print(" ↓ "); //u+2193
+                                break;
+                        }
+                    }
+                    else {
+                        writer.print(" G ");
+                    }
+                }
+                else {
+                    writer.print("   ");
+                }
+            }
+            writer.print("\n");
+        }
     }
-}
+} 
