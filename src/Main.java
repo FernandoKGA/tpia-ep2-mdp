@@ -45,7 +45,8 @@ public class Main {
          * Algorithms
          * -iv -> Iteration Value
          * -ip -> Iteration Policy
-         * mode == "-ex"
+         * 
+         * Example
          * java src/Main -ex -iv
          * java src/Main -f -ip 1
          */
@@ -104,12 +105,14 @@ public class Main {
         }
         else {
             if ( mode.equals("-ex") ) {
-                if ( args[2].equals("-p") ) {
-                    //printa grid
-                    printGrid(problem);
-                }
-                else {
-                    throw new IllegalArgumentException("Parameter " + "'" + args[2] + "'" + " not recognized.");
+                if ( args.length > 2 ) {
+                    if ( args[2].equals("-p") ) {
+                        //printa grid
+                        printGrid(problem);
+                    }
+                    else {
+                        throw new IllegalArgumentException("Parameter " + "'" + args[2] + "'" + " not recognized.");
+                    }   
                 }
             }
         }
