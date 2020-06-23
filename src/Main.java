@@ -29,7 +29,7 @@ public class Main {
     static final String randomGoalInitialState = "RandomGoalInitialState";
     static final String example = "RunningExample";
     
-    // Program must be run from top level folder (tpia-ep2-mdp) with command: java src/Main.java [-f | -r] [1-10]
+    // Program must be run from top level folder (tpia-ep2-mdp) with command: java src/Main [-f | -r] [-iv | -ip] [1-10] [-p]
     public static void main( String[] args ) throws Exception, java.io.IOException {
         /**
          * args 0 -> type of file to use
@@ -43,12 +43,13 @@ public class Main {
          * -ex -> RunningExample
          * 
          * Algorithms
-         * -iv -> Iteration Value
-         * -ip -> Iteration Policy
+         * -iv -> Value Iteration
+         * -ip -> Policy Iteration
          * 
          * Example
          * java src/Main -ex -iv
          * java src/Main -f -ip 1
+         * java src/Main -f -ip 1 -p
          */
 
         FileReader file;
@@ -84,11 +85,11 @@ public class Main {
         switch( alg ) {
             case "-iv":
                 //Iteração de valor
-                IterationValue(problem);
+                valueIteration(problem);
                 break;
             case "-ip":
                 //Iteração de política    
-                IterationPolicy(problem);
+                policyIteration(problem);
                 break;
             default:
                 throw new IllegalArgumentException("Parameter " + "'" + alg + "'" + " not recognized. Choose between '-iv' or '-ip'.");
@@ -169,7 +170,7 @@ public class Main {
         return result;
     }
 
-    public static void IterationValue( Problem problem ) {
+    public static void valueIteration( Problem problem ) {
         long initTime = System.currentTimeMillis();
 
         //initialize V0
@@ -207,7 +208,7 @@ public class Main {
 
         long finishTime = System.currentTimeMillis();
         long diff = finishTime - initTime;
-        System.out.println("Iteration Value Time: " + diff + "ms");
+        System.out.println("Value Iteration Time: " + diff + "ms");
         System.out.println("Iterations: " + iterations);
     }
 
@@ -277,7 +278,7 @@ public class Main {
         }
     } 
 
-    public static void IterationPolicy( Problem problem ) {
+    public static void policyIteration( Problem problem ) {
         long initTime = System.currentTimeMillis();
         
         //assign an arbitrary assignment of pi0 to each state
@@ -354,7 +355,7 @@ public class Main {
 
         long finishTime = System.currentTimeMillis();
         long diff = finishTime - initTime;
-        System.out.println("Iteration Policy Time: " + diff + "ms");
+        System.out.println("Policy Iteration Time: " + diff + "ms");
         System.out.println("Iterations: " + iterations);
     }
 
