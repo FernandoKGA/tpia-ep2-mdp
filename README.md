@@ -19,7 +19,7 @@ Planning Topics of Artificial Intelligence - EP2 - Markovian Decision Process
 
 Para arquivos do _FixedGoalInitialState_ ou _RandomGoalInitialState_:
 
-        java src/Main [-f | -r] [-vi | -pi] [1-10] [-p]
+    java src/Main [-f | -r] [-vi | -pi] [1-10] [-p]
 
 Para arquivos do _RunningExample_:
 
