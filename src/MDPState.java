@@ -43,4 +43,8 @@ public class MDPState {
     public void printStateCoords() {
         System.out.println("State: " + "x" + x + "y" + y);
     }
+
+    public String toRobotAtString() {
+        return "robot-at-x" + x + "y" + y;
+    }
 }

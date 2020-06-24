@@ -7,6 +7,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+
 import java.security.KeyStore.Entry;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,18 +57,35 @@ public class Main {
         FileReader file;
         BufferedReader br;
         Problem problem;
+        String jsonString = "";
 
         String mode = args[0].trim();
         switch( mode ) {
             case "-f":
                 file = getFileReader(args[2], fixedGoalInitialState);
                 br = new BufferedReader(file);
+                jsonString = new BufferedReader(
+                    new FileReader(
+                        createFilePath(
+                            args[2], 
+                            "PoliticasFixedRandom/" + fixedGoalInitialState, file_format + "_politicas.json"
+                        )
+                    )
+                ).readLine();
                 problem = Problem.createProblem(br);
                 file.close();
                 break;
             case "-r":
                 file = getFileReader(args[2], randomGoalInitialState);
                 br = new BufferedReader(file);
+                jsonString = new BufferedReader(
+                    new FileReader(
+                        createFilePath(
+                            args[2], 
+                            "PoliticasFixedRandom/" + randomGoalInitialState, file_format + "_politicas.json"
+                        )
+                    )
+                ).readLine();
                 problem = Problem.createProblem(br);
                 file.close();
                 break;
@@ -89,7 +108,7 @@ public class Main {
                 break;
             case "-ip":
                 //Iteração de política    
-                policyIteration(problem);
+                policyIteration(problem, jsonString);
                 break;
             default:
                 throw new IllegalArgumentException("Parameter " + "'" + alg + "'" + " not recognized. Choose between '-iv' or '-ip'.");
@@ -103,7 +122,7 @@ public class Main {
             else {
                 throw new IllegalArgumentException("Parameter " + "'" + args[3] + "'" + " not recognized.");
             }
-        }
+        }                
         else {
             if ( mode.equals("-ex") ) {
                 if ( args.length > 2 ) {
@@ -117,6 +136,14 @@ public class Main {
                 }
             }
         }
+    }
+
+    public static String getAbsolutePath() {
+        return new File("").getAbsolutePath();
+    }
+
+    public static String createFilePath( String fileNumber, String folder, String file_format ) {
+        return getAbsolutePath() + "/files/" + folder + "/" + file_prefix + fileNumber + file_format;
     }
 
     public static FileReader getFileReader ( String fileNumber, String folder ) throws FileNotFoundException {
@@ -268,7 +295,7 @@ public class Main {
 
             //minResidual = Math.min(minResidual, maxResidual);
 
-            System.out.println("itr: " + iterations + " res: " + maxResidual);
+            //System.out.println("itr: " + iterations + " res: " + maxResidual);
         } while ( maxResidual > problem.epsilon);
 
         // atualiza os valuefunctions dos states com o valor do ultimo localvaluesfunction
@@ -278,52 +305,38 @@ public class Main {
         }
     } 
 
-    public static void policyIteration( Problem problem ) {
+    public static void policyIteration( Problem problem, String jsonString ) {
         long initTime = System.currentTimeMillis();
         
+        //preprocess json
+        // remove brackets
+        jsonString = jsonString.substring(1);
+        jsonString = jsonString.substring(0, jsonString.length()-1);
+        
+        Map<String, String> stateAndAction = new HashMap<>();
+        String[] keyValues = jsonString.split(",");
+        for ( String keyValue : keyValues ) {
+            keyValue = keyValue.trim();
+            String[] auxValues = keyValue.split("\": \"");
+            String state = auxValues[0].substring(1);
+            String action = auxValues[1].substring(0,auxValues[1].length()-1);
+            stateAndAction.put(state, "move-" + action);
+        }
+
         //assign an arbitrary assignment of pi0 to each state
         for ( MDPState state : problem.states ) {
             // se estado goal, nao atribui acao para ele
             if ( state.x == problem.goalState.x && state.y == problem.goalState.y ) continue;
 
-            Map<String, MDPAction> localActions = new HashMap<>();
+            String actionName = stateAndAction.get(state.toRobotAtString());
             for ( MDPAction action : state.actions ) {
-                // se acao so tem 1 sucessor
-                if ( action.sucessorAndPossibility.size() == 1 ) {
-                    Map.Entry<MDPState, PD> sucessorAndPossibility = action.sucessorAndPossibility.entrySet().iterator().next();
-                    MDPState sucessor = sucessorAndPossibility.getKey();
-
-                    // e o sucessor eh o proprio estado, vai pra proxima acao
-                    if ( state.x == sucessor.x && state.y == sucessor.y ) continue;
-                    else {
-                        localActions.put(action.actionName, action);
-                    }
-                }
-                else {
-                    localActions.put(action.actionName, action);
+                if ( action.actionName.equals(actionName) ) {
+                    state.bestAction = action;
+                    break;
                 }
             }
-            
-            if ( localActions.containsKey("move-east") ) {
-                state.bestAction = localActions.get("move-east");
-            }
-            else {
-                if ( localActions.containsKey("move-north") ) {
-                    state.bestAction = localActions.get("move-north");
-                }
-                else {
-                    if ( localActions.containsKey("move-south") ) {
-                        state.bestAction = localActions.get("move-south");
-                    }
-                    else {
-                        state.bestAction = localActions.get("move-west");
-                    }
-                }
-            }
-            //state.printStateCoords();
-            //System.out.println(state.bestAction.actionName + " " + state.bestAction.cost);
         }
-
+        
         for ( MDPState state : problem.states ) {
             state.valuesFunctions.add(0.0);
         }
@@ -334,7 +347,7 @@ public class Main {
         do {
             hasChanged = false;
             iterations++;
-            System.out.println(iterations);
+            //System.out.println(iterations);
 
             evaluatePolicy(problem);
 
