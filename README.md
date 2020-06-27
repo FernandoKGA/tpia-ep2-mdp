@@ -47,6 +47,16 @@ Para arquivos do _RunningExample_:
 
 * Parâmetro OPCIONAL, caso queira imprimir o grid
 
+#### Executar todos e salvar em arquivos
+
+Value Iteration:
+* VI Fixed from 1 to 10 with output: 
+`java src/Main -f -iv 1 -p > output-vi-fixed-1.txt && java src/Main -f -iv 2 -p > output-vi-fixed-2.txt && java src/Main -f -iv 3 -p > output-vi-fixed-3.txt && java src/Main -f -iv 4 -p > output-vi-fixed-4.txt && java src/Main -f -iv 5 -p > output-vi-fixed-5.txt && java src/Main -f -iv 6 -p > output-vi-fixed-6.txt && java src/Main -f -iv 7 -p > output-vi-fixed-7.txt && java src/Main -f -iv 8 -p > output-vi-fixed-8.txt && java src/Main -f -iv 9 -p > output-vi-fixed-9.txt && java src/Main -f -iv 10 -p > output-vi-fixed-10.txt`
+* VI Random from 1 to 10 with output: `java src/Main -r -iv 1 -p > output-vi-random-1.txt && java src/Main -r -iv 2 -p > output-vi-random-2.txt && java src/Main -r -iv 3 -p > output-vi-random-3.txt && java src/Main -r -iv 4 -p > output-vi-random-4.txt && java src/Main -r -iv 5 -p > output-vi-random-5.txt && java src/Main -r -iv 6 -p > output-vi-random-6.txt && java src/Main -r -iv 7 -p > output-vi-random-7.txt && java src/Main -r -iv 8 -p > output-vi-random-8.txt && java src/Main -r -iv 9 -p > output-vi-random-9.txt && java src/Main -r -iv 10 -p > output-vi-random-10.txt`
+
+Policy Iteration:
+* PI Fixed from 1 to 10 with output: `java src/Main -f -ip 1 -p > output-pi-fixed-1.txt && java src/Main -f -ip 2 -p > output-pi-fixed-2.txt && java src/Main -f -ip 3 -p > output-pi-fixed-3.txt && java src/Main -f -ip 4 -p > output-pi-fixed-4.txt && java src/Main -f -ip 5 -p > output-pi-fixed-5.txt && java src/Main -f -ip 6 -p > output-pi-fixed-6.txt && java src/Main -f -ip 7 -p > output-pi-fixed-7.txt && java src/Main -f -ip 8 -p > output-pi-fixed-8.txt && java src/Main -f -ip 9 -p > output-pi-fixed-9.txt && java src/Main -f -ip 10 -p > output-pi-fixed-10.txt`
+* PI Random from 1 to 10 with output: `java src/Main -r -ip 1 -p > output-pi-random-1.txt && java src/Main -r -ip 2 -p > output-pi-random-2.txt && java src/Main -r -ip 3 -p > output-pi-random-3.txt && java src/Main -r -ip 4 -p > output-pi-random-4.txt && java src/Main -r -ip 5 -p > output-pi-random-5.txt && java src/Main -r -ip 6 -p > output-pi-random-6.txt && java src/Main -r -ip 7 -p > output-pi-random-7.txt && java src/Main -r -ip 8 -p > output-pi-random-8.txt && java src/Main -r -ip 9 -p > output-pi-random-9.txt && java src/Main -r -ip 10 -p > output-pi-random-10.txt`
 ---
 
 ## Português - Brasileiro
