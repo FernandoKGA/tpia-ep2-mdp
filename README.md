@@ -17,6 +17,8 @@ Planning Topics of Artificial Intelligence - EP2 - Markovian Decision Process
 
 ### Executar o projeto 
 
+**AVISO: Para os usuários de Windows, recomenda-se não utilizar o parâmetro de imprimir o *grid*, pois o Windows não interpreta Unicode diretamente, e são necessárias configurações extras para que ele possa funcionar, e mesmo assim não é garantido por não ser padrão do console do mesmo.**
+
 Para arquivos do _FixedGoalInitialState_ ou _RandomGoalInitialState_:
 
     java src/Main [-f | -r] [-vi | -pi] [1-10] [-p]
