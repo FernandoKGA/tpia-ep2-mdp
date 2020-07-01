@@ -9,11 +9,11 @@ Planning Topics of Artificial Intelligence - EP2 - Markovian Decision Process
 
 * Usuários de _Windows_, execute o código:
 
-        javac src/PD.java; javac src/DD.java; javac src/MDPAction.java; javac src/MDPState.java; javac src/Problem.java; javac src/Main.java
+        javac src/PD.java; javac src/ValueFunction.java; javac src/MDPAction.java; javac src/MDPState.java; javac src/Problem.java; javac src/Main.java
     
 * Usuários do _Linux_ ou _MacOS_, execute o código:
 
-        javac src/PD.java && javac src/DD.java && javac src/MDPAction.java && javac src/MDPState.java && javac src/Problem.java && javac src/Main.java
+        javac src/PD.java && javac src/ValueFunction.java && javac src/MDPAction.java && javac src/MDPState.java && javac src/Problem.java && javac src/Main.java
 
 ### Executar o projeto 
 
