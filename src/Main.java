@@ -22,7 +22,7 @@ import src.MDPAction;
 import src.MDPState;
 import src.PD;
 import src.Problem;
-import src.DD;
+import src.ValueFunction;
 
 public class Main {
     static final String file_prefix = "navigation_";
@@ -244,12 +244,12 @@ public class Main {
         double maxResidual = 0;
         
         // lista de valores local dos estados por iteracao (nao a que esta no problema)
-        Map<MDPState, DD> localValuesFunction = new HashMap<>();
+        Map<MDPState, ValueFunction> localValuesFunction = new HashMap<>();
 
         for ( MDPState state : problem.states ) {
-            DD dd = new DD();
-            dd.firstDouble = state.valuesFunctions.get(state.valuesFunctions.size() - 1);
-            localValuesFunction.put(state, dd);
+            ValueFunction valueFunction = new ValueFunction();
+            valueFunction.oldValue = state.valuesFunctions.get(state.valuesFunctions.size() - 1);
+            localValuesFunction.put(state, valueFunction);
         }
 
         //double minResidual = Double.MAX_VALUE;
@@ -267,7 +267,7 @@ public class Main {
                         MDPState sucessorState = pair.getKey();
                         double probability = pair.getValue().probabilityOfAction;
 
-                        v += (localValuesFunction.get(sucessorState).firstDouble * probability);
+                        v += (localValuesFunction.get(sucessorState).oldValue * probability);
                     }
 
                     // state.printStateCoords();
@@ -276,21 +276,21 @@ public class Main {
                     maxResidual = Math.max(
                         maxResidual, 
                         computeResidual(
-                            localValuesFunction.get(state).firstDouble,
+                            localValuesFunction.get(state).oldValue,
                             v
                         )
                     );
                     
-                    localValuesFunction.get(state).secondDouble = v;
+                    localValuesFunction.get(state).newValue = v;
                 }
                 else {
-                    localValuesFunction.get(state).secondDouble = 0.0;
+                    localValuesFunction.get(state).newValue = 0.0;
                 }
             }
 
             for ( MDPState state : problem.states ) {
-                DD aux = localValuesFunction.get(state);
-                aux.firstDouble = aux.secondDouble;
+                ValueFunction aux = localValuesFunction.get(state);
+                aux.oldValue = aux.newValue;
             }
 
             //minResidual = Math.min(minResidual, maxResidual);
@@ -300,8 +300,8 @@ public class Main {
 
         // atualiza os valuefunctions dos states com o valor do ultimo localvaluesfunction
         for ( MDPState state : problem.states ) {
-            DD aux = localValuesFunction.get(state);
-            state.valuesFunctions.add(aux.secondDouble);
+            ValueFunction aux = localValuesFunction.get(state);
+            state.valuesFunctions.add(aux.newValue);
         }
     } 
 
