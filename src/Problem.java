@@ -18,10 +18,6 @@ public class Problem {
     public MDPState goalState;
     public double epsilon = 0.1;
 
-    public Problem() {
-        
-    }
-
     public static Problem createProblem( BufferedReader br ) throws IOException {
         Problem problem = new Problem();
         String[] statesStr = new String[1]; //just initialize
@@ -39,7 +35,7 @@ public class Problem {
                     statesStr = line.split(", ");
                     
                     for ( String state : statesStr ) {
-                        states.put(state, new MDPState(state));
+                        states.put( state, new MDPState( state ) );
                     }
 
                     break;
@@ -103,10 +99,10 @@ public class Problem {
 
                                 action = line.split(" ");
 
-                                String currentStateStr = action[0]; //usar para pesquisar no mapa
+                                String currentStateStr = action[0];
                                 MDPState currentState = states.get(currentStateStr);
 
-                                String sucessorStateStr = action[1]; //pegar o estado sucessor no mapa
+                                String sucessorStateStr = action[1];
                                 MDPState sucessorState = states.get(sucessorStateStr);
 
                                 double probability = Double.parseDouble(action[2]);
@@ -137,6 +133,7 @@ public class Problem {
         }
         
         problem.states = states.values().toArray(new MDPState[states.size()]);
+        
         // for ( MDPState state : problem.states ) {
             
         //         System.out.println(

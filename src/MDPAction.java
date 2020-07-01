@@ -11,10 +11,7 @@ public class MDPAction {
     public Map<MDPState, PD> sucessorAndProbability = new HashMap<>();
     public double cost;
 
-    public MDPAction() {
-    }
-
-    public MDPAction(String actionName) {
+    public MDPAction( String actionName ) {
         this.actionName = actionName;
         this.cost = 0;
     }

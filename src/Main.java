@@ -31,7 +31,7 @@ public class Main {
     static final String randomGoalInitialState = "RandomGoalInitialState";
     static final String example = "RunningExample";
     
-    // Program must be run from top level folder (tpia-ep2-mdp) with command: java src/Main [-f | -r] [-iv | -ip] [1-10] [-p]
+    // Program must be run from top level folder (tpia-ep2-mdp) with command: java src/Main [-f | -r | -ex] [-vi | -pi] [1-10] [-p]
     public static void main( String[] args ) throws Exception, java.io.IOException {
         /**
          * args 0 -> type of file to use
@@ -96,42 +96,38 @@ public class Main {
                 file.close();
                 break;
             default:
-                throw new IllegalArgumentException("Parameter " + "'" + mode + "'" + " not recognized.");
+                throw new IllegalArgumentException("Parameter '" + mode + "' not recognized.");
         }
 
-        //executa algoritmos
+        // Executa algoritmos
         String alg = args[1].trim();
         switch( alg ) {
             case "-vi":
-                //Iteração de valor
-                valueIteration(problem);
+                valueIteration( problem );
                 break;
-            case "-pi":
-                //Iteração de política    
-                policyIteration(problem, jsonString);
+            case "-pi":  
+                policyIteration( problem, jsonString );
                 break;
             default:
-                throw new IllegalArgumentException("Parameter " + "'" + alg + "'" + " not recognized. Choose between '-iv' or '-ip'.");
+                throw new IllegalArgumentException("Parameter '" + alg + "' not recognized. Choose between '-vi' or '-pi'.");
         }
 
         if ( args.length == 4 ) {
             if ( args[3].equals("-p") ) {
-                //printa grid
                 printGrid(problem);
             }
             else {
-                throw new IllegalArgumentException("Parameter " + "'" + args[3] + "'" + " not recognized.");
+                throw new IllegalArgumentException("Parameter '" + args[3] + "' not recognized.");
             }
         }                
         else {
             if ( mode.equals("-ex") ) {
                 if ( args.length > 2 ) {
                     if ( args[2].equals("-p") ) {
-                        //printa grid
                         printGrid(problem);
                     }
                     else {
-                        throw new IllegalArgumentException("Parameter " + "'" + args[2] + "'" + " not recognized.");
+                        throw new IllegalArgumentException("Parameter '" + args[2] + "' not recognized.");
                     }   
                 }
             }
@@ -146,12 +142,12 @@ public class Main {
         return getAbsolutePath() + "/files/" + folder + "/" + file_prefix + fileNumber + file_format;
     }
 
-    public static FileReader getFileReader ( String fileNumber, String folder ) throws FileNotFoundException {
+    public static FileReader getFileReader( String fileNumber, String folder ) throws FileNotFoundException {
         String absolutePath = new File("").getAbsolutePath();
         return new FileReader(absolutePath+"/files/"+folder+"/"+file_prefix+fileNumber+file_format);
     }
 
-    public static FileReader getFileReaderForExample ( String folder ) throws FileNotFoundException {
+    public static FileReader getFileReaderForExample( String folder ) throws FileNotFoundException {
         String absolutePath = new File("").getAbsolutePath();
         return new FileReader(absolutePath+"/files/"+folder+"/example"+file_format);
     }
@@ -174,16 +170,15 @@ public class Main {
                 MDPState sucessor = sucessorAndProbability.getKey();
                 if ( state.x == sucessor.x && state.y == sucessor.y ) continue;
                 else {
-                    sum += (action.cost + sucessor.valuesFunctions.get(iteration-1));
-                    // ALERTA PARA: ele realmente pega o valor da iteracao atual ou pega de outra iteracao?
+                    sum += ( action.cost + sucessor.valuesFunctions.get( iteration-1 ) );
                 }
             }
             else {
                 sum += action.cost;
-                for (Map.Entry<MDPState, PD> pair : action.sucessorAndProbability.entrySet()) {
+                for ( Map.Entry<MDPState, PD> pair : action.sucessorAndProbability.entrySet() ) {
                     MDPState sucessor = pair.getKey();
-                    PD probability = pair.getValue();
-                    sum += (probability.probabilityOfAction * sucessor.valuesFunctions.get(iteration-1));
+                    PD probabilityAndDiscard = pair.getValue();
+                    sum += ( probabilityAndDiscard.probability * sucessor.valuesFunctions.get( iteration-1 ) );
                 }
             }
 
@@ -193,15 +188,14 @@ public class Main {
             }
         }
 
-        SimpleEntry<Double, MDPAction> result = new SimpleEntry<Double,MDPAction>(minimal_value, argmin);
+        SimpleEntry<Double, MDPAction> result = new SimpleEntry<Double,MDPAction>( minimal_value, argmin );
         return result;
     }
 
     public static void valueIteration( Problem problem ) {
         long initTime = System.currentTimeMillis();
 
-        //initialize V0
-        for (MDPState state : problem.states) {
+        for ( MDPState state : problem.states ) {
             state.valuesFunctions.add(0.0);
         }
         int iterations = 0;
@@ -211,18 +205,18 @@ public class Main {
             iterations++;
             double localResidual = 0;
 
-            for (MDPState state : problem.states) {
-                if (!state.equals(problem.goalState)) {
-                    Map.Entry<Double, MDPAction> pair = computeValueFunctionWithBellmanBackup(state, iterations);
+            for ( MDPState state : problem.states ) {
+                if ( !state.equals( problem.goalState) ) {
+                    Map.Entry<Double, MDPAction> pair = computeValueFunctionWithBellmanBackup( state, iterations );
                     double newValueFunction = pair.getKey();
                     MDPAction argmin = pair.getValue();
                     
                     localResidual = Math.max(
                         localResidual,
-                        computeResidual(newValueFunction,state.valuesFunctions.get(state.valuesFunctions.size()-1))
+                        computeResidual( newValueFunction,state.valuesFunctions.get( state.valuesFunctions.size()-1 ) )
                     );
 
-                    state.valuesFunctions.add(newValueFunction);
+                    state.valuesFunctions.add( newValueFunction );
                     state.bestAction = argmin;
                 }
                 else {
@@ -231,7 +225,8 @@ public class Main {
             }
 
             minResidual = Math.min(minResidual, localResidual);
-        } while ( minResidual > problem.epsilon);
+
+        } while ( minResidual > problem.epsilon );
 
         long finishTime = System.currentTimeMillis();
         long diff = finishTime - initTime;
@@ -243,31 +238,28 @@ public class Main {
         int iterations = 0;
         double maxResidual = 0;
         
-        // lista de valores local dos estados por iteracao (nao a que esta no problema)
         Map<MDPState, ValueFunction> localValuesFunction = new HashMap<>();
 
         for ( MDPState state : problem.states ) {
             ValueFunction valueFunction = new ValueFunction();
-            valueFunction.oldValue = state.valuesFunctions.get(state.valuesFunctions.size() - 1);
-            localValuesFunction.put(state, valueFunction);
+            valueFunction.oldValue = state.valuesFunctions.get( state.valuesFunctions.size() - 1 );
+            localValuesFunction.put( state, valueFunction );
         }
-
-        //double minResidual = Double.MAX_VALUE;
         
         do {       
             iterations++;
             maxResidual = 0;
 
             for ( MDPState state : problem.states ) {
-                if (!state.equals(problem.goalState)) {
+                if ( !state.equals( problem.goalState ) ) {
                     MDPAction bestAction = state.bestAction;
                     
                     double v = bestAction.cost;
                     for ( Map.Entry<MDPState, PD> pair : bestAction.sucessorAndProbability.entrySet() ) {
                         MDPState sucessorState = pair.getKey();
-                        double probability = pair.getValue().probabilityOfAction;
+                        double probability = pair.getValue().probability;
 
-                        v += (localValuesFunction.get(sucessorState).oldValue * probability);
+                        v += ( localValuesFunction.get( sucessorState ).oldValue * probability );
                     }
 
                     // state.printStateCoords();
@@ -276,42 +268,37 @@ public class Main {
                     maxResidual = Math.max(
                         maxResidual, 
                         computeResidual(
-                            localValuesFunction.get(state).oldValue,
+                            localValuesFunction.get( state ).oldValue,
                             v
                         )
                     );
                     
-                    localValuesFunction.get(state).newValue = v;
+                    localValuesFunction.get( state ).newValue = v;
                 }
                 else {
-                    localValuesFunction.get(state).newValue = 0.0;
+                    localValuesFunction.get( state ).newValue = 0.0;
                 }
             }
 
             for ( MDPState state : problem.states ) {
-                ValueFunction aux = localValuesFunction.get(state);
+                ValueFunction aux = localValuesFunction.get( state );
                 aux.oldValue = aux.newValue;
             }
 
-            //minResidual = Math.min(minResidual, maxResidual);
-
             //System.out.println("itr: " + iterations + " res: " + maxResidual);
-        } while ( maxResidual > problem.epsilon);
+        } while ( maxResidual > problem.epsilon );
 
-        // atualiza os valuefunctions dos states com o valor do ultimo localvaluesfunction
         for ( MDPState state : problem.states ) {
-            ValueFunction aux = localValuesFunction.get(state);
-            state.valuesFunctions.add(aux.newValue);
+            ValueFunction aux = localValuesFunction.get( state );
+            state.valuesFunctions.add( aux.newValue );
         }
     } 
 
     public static void policyIteration( Problem problem, String jsonString ) {
         long initTime = System.currentTimeMillis();
-        
-        //preprocess json
-        // remove brackets
-        jsonString = jsonString.substring(1);
-        jsonString = jsonString.substring(0, jsonString.length()-1);
+
+        jsonString = jsonString.substring( 1 );
+        jsonString = jsonString.substring( 0, jsonString.length()-1 );
         
         Map<String, String> stateAndAction = new HashMap<>();
         String[] keyValues = jsonString.split(",");
@@ -322,15 +309,14 @@ public class Main {
             String action = auxValues[1].substring(0,auxValues[1].length()-1);
             stateAndAction.put(state, "move-" + action);
         }
-
-        //assign an arbitrary assignment of pi0 to each state
+        
         for ( MDPState state : problem.states ) {
-            // se estado goal, nao atribui acao para ele
+            
             if ( state.x == problem.goalState.x && state.y == problem.goalState.y ) continue;
 
-            String actionName = stateAndAction.get(state.toRobotAtString());
+            String actionName = stateAndAction.get( state.toRobotAtString() );
             for ( MDPAction action : state.actions ) {
-                if ( action.actionName.equals(actionName) ) {
+                if ( action.actionName.equals( actionName ) ) {
                     state.bestAction = action;
                     break;
                 }
@@ -347,18 +333,19 @@ public class Main {
         do {
             hasChanged = false;
             iterations++;
-            //System.out.println(iterations);
+            //System.out.println("Iteration: " + iterations);
 
             evaluatePolicy(problem);
 
-            // melhora a politica
             for ( MDPState state : problem.states ) {
+
                 //state.printStateCoords();
+
                 if ( state.x == problem.goalState.x && state.y == problem.goalState.y ) continue;
-                Map.Entry<Double, MDPAction> result = computeValueFunctionWithBellmanBackup(state, iterations+1);
+                Map.Entry<Double, MDPAction> result = computeValueFunctionWithBellmanBackup( state, iterations+1 );
                 
                 //System.out.println("V: " + result.getKey() + " " + result.getValue().actionName + " cost: " + result.getValue().cost);
-                if ( !state.bestAction.actionName.equals(result.getValue().actionName)) {
+                if ( !state.bestAction.actionName.equals( result.getValue().actionName ) ) {
                     hasChanged = true;
                     state.bestAction = result.getValue();
                 }
@@ -381,7 +368,6 @@ public class Main {
             if ( maximum_y < state.y ) maximum_y = state.y;
         }
 
-        // builds grid
         MDPState[][] grid = new MDPState[maximum_x+1][maximum_y+1];
         for ( MDPState state : problem.states ) {
             grid[state.x][state.y] = state;

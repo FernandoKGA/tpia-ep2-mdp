@@ -30,18 +30,14 @@ public class MDPState {
     }
 
     public static String[] parseState( String state ) {
-        //state = robot-at-x18y20
         String[] state_strings = state.split("-");
-        //state_strings = robot at x18y20
         String[] coords = state_strings[2].split("y");
-        //coords = x18 20
         coords[0] = coords[0].replace("x", "");
-        //coords = 18 20
         return coords;
     }
 
     public void printStateCoords() {
-        System.out.println("State: " + "x" + x + "y" + y);
+        System.out.println("State: x" + x + "y" + y);
     }
 
     public String toRobotAtString() {
