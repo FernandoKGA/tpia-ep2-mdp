@@ -116,7 +116,7 @@ public class Problem {
                                 boolean hasAction = false;
                                 for ( MDPAction mdpAction : currentState.actions ) {
                                     if ( mdpAction.actionName.equals(actionName) ) {
-                                        mdpAction.sucessorAndPossibility.put(sucessorState, pd);
+                                        mdpAction.sucessorAndProbability.put(sucessorState, pd);
                                         hasAction = true;
                                         break;
                                     }
@@ -124,7 +124,7 @@ public class Problem {
 
                                 if ( !hasAction ) {
                                     MDPAction mdpAction = new MDPAction(actionName);
-                                    mdpAction.sucessorAndPossibility.put(sucessorState, pd);
+                                    mdpAction.sucessorAndProbability.put(sucessorState, pd);
                                     currentState.actions.add(mdpAction);
                                 }
 
