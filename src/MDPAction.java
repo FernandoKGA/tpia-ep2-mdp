@@ -8,7 +8,7 @@ import src.MDPState;
 
 public class MDPAction {
     public String actionName;
-    public Map<MDPState, PD> sucessorAndPossibility = new HashMap<>();
+    public Map<MDPState, PD> sucessorAndProbability = new HashMap<>();
     public double cost;
 
     public MDPAction() {
